@@ -12,6 +12,7 @@ import { openPackage } from './package.js'
 import { show } from './commands/show.js'
 import { steps, artifact, files, extract } from './commands/artifacts.js'
 import { serve, resolveScope } from './mcp.js'
+import { parseArgs } from './args.js'
 
 const USAGE = `bugpacker <command> <package.zip>
 
@@ -39,11 +40,6 @@ function fail(message: string): never {
   process.exit(1)
 }
 
-function flag(args: string[], name: string): string | undefined {
-  const at = args.indexOf(`--${name}`)
-  return at === -1 ? undefined : args[at + 1]
-}
-
 /** Read from the installed package, so it cannot drift from what npm put on disk. */
 function installedVersion(): string {
   const url = new URL('../package.json', import.meta.url)
@@ -62,8 +58,13 @@ function main(argv: string[]): void {
     return
   }
 
-  const command = args[0]
-  const positional = args.slice(1).filter((a) => !a.startsWith('--'))
+  let parsed
+  try {
+    parsed = parseArgs(args)
+  } catch (error) {
+    fail(`${(error as Error).message}\n\n${USAGE}`)
+  }
+  const { command, positional, flags } = parsed
   const target = positional[0]
   if (!target) fail(`${command} needs a package.\n\n${USAGE}`)
 
@@ -105,7 +106,7 @@ function main(argv: string[]): void {
       case 'json':
         return write(JSON.stringify(pkg.report, null, 2))
       case 'extract':
-        return write(extract(pkg, flag(args, 'out') ?? '.', positional[1]))
+        return write(extract(pkg, flags.get('out') ?? '.', positional[1]))
       default:
         fail(`Unknown command: ${command}\n\n${USAGE}`)
     }
