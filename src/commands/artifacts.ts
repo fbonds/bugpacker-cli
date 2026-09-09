@@ -43,14 +43,38 @@ export function artifact(pkg: BugPackage, name: string): string {
   return text.replace(/\n$/, '')
 }
 
+/** Where the extension puts files the reporter added, which it does not scrub. */
+const ATTACHMENTS_FOLDER = 'Unscrubbed-Attachments'
+
+/**
+ * The role column for an entry that `report.json` does not describe.
+ *
+ * It used to read "(not digested)", which is true and useless: it describes our
+ * bookkeeping rather than the file, and a reader told that a file is "not digested"
+ * reasonably concludes it cannot be read. Every one of these is readable. So say what
+ * the file is instead, and say it in the same vocabulary as the roles beside it.
+ *
+ * Three cases reach here. `report.json` cannot state its own size and `manifest.json`
+ * is the other half of the same bookkeeping, so neither is ever listed. Attachments
+ * are added after the digest is built. Anything else means the digest and the archive
+ * disagree, which is worth naming rather than papering over.
+ */
+export function undigestedRole(name: string): string {
+  if (name === 'report.json' || name === 'manifest.json') return 'package metadata'
+  if (name.startsWith(`${ATTACHMENTS_FOLDER}/`)) return 'attachment, not scrubbed'
+  return 'not described in report.json'
+}
+
 export function files(pkg: BugPackage): string {
   const digested = new Map(pkg.report.files.map((f) => [f.name, f]))
   const out: string[] = []
   for (const name of pkg.names) {
     const meta = digested.get(name)
-    const bytes = meta ? String(meta.bytes).padStart(9) : ''.padStart(9)
-    const role = meta ? meta.role : '(not digested)'
-    out.push(`${name.padEnd(34)} ${bytes}  ${role}`)
+    // The archive knows the size of every entry, so there is no reason to print a
+    // blank column for the ones the digest happens not to cover.
+    const bytes = meta ? meta.bytes : (pkg.read(name)?.length ?? 0)
+    const role = meta ? meta.role : undigestedRole(name)
+    out.push(`${name.padEnd(34)} ${String(bytes).padStart(9)}  ${role}`)
   }
   return out.join('\n')
 }

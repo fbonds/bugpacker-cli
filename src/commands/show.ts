@@ -9,6 +9,7 @@
 
 import type { BugPackage } from '../package.js'
 import type { Report } from '../report.js'
+import { undigestedRole } from './artifacts.js'
 
 function duration(ms: number): string {
   const total = Math.round(ms / 1000)
@@ -94,9 +95,10 @@ export function show(pkg: BugPackage): string {
   }
   const extra = pkg.names.filter((n) => !r.files.some((f) => f.name === n))
   for (const name of extra) {
-    // report.json and manifest.json cannot carry their own digests, and attachments
-    // arrive after the list is built. Shown so the count matches what is in the ZIP.
-    out.push(`${name.padEnd(28)} ${''.padStart(9)}  (not digested)`)
+    // Shown so the count matches what is in the ZIP. See undigestedRole for why each
+    // of these is missing from the digest and why the column no longer says so.
+    const bytes = pkg.read(name)?.length ?? 0
+    out.push(`${name.padEnd(28)} ${String(bytes).padStart(9)}  ${undigestedRole(name)}`)
   }
 
   return out.join('\n')

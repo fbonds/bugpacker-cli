@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { zipSync, strToU8 } from 'fflate'
 
 import { openPackage } from '../dist/package.js'
-import { steps, artifact, files, extract } from '../dist/commands/artifacts.js'
+import { steps, artifact, files, extract, undigestedRole } from '../dist/commands/artifacts.js'
 import { KNOWN_SCHEMA_VERSION } from '../dist/report.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -84,8 +84,28 @@ test('a missing artifact explains itself and points somewhere useful', () => {
 test('files lists everything in the archive, digested or not', () => {
   const text = files(pkg)
   assert.match(text, /console\.log/)
-  assert.match(text, /report\.json.*not digested/)
   assert.match(text, /nested\/network\.har/)
+})
+
+test('an entry the digest does not cover is named, not called undigested', () => {
+  const text = files(pkg)
+  // "(not digested)" described our bookkeeping and read as "cannot be read", which
+  // is the opposite of true: get_file and extract both return these.
+  assert.doesNotMatch(text, /not digested/)
+  assert.match(text, /report\.json\s+\d+\s+package metadata/)
+  // The fixture carries no manifest.json, so undigestedRole covers it directly below.
+})
+
+test('every row carries a byte count, digest or no digest', () => {
+  for (const line of files(pkg).split('\n')) {
+    assert.match(line, /\s\d+\s/, `no size on: ${line}`)
+  }
+})
+
+test('an attachment is named as unscrubbed rather than left blank', () => {
+  assert.equal(undigestedRole('Unscrubbed-Attachments/notes.pdf'), 'attachment, not scrubbed')
+  assert.equal(undigestedRole('report.json'), 'package metadata')
+  assert.equal(undigestedRole('stray.txt'), 'not described in report.json')
 })
 
 test('extract writes one artifact and returns where it went', () => {
