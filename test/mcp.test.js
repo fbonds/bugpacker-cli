@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { writeFileSync, mkdirSync, mkdtempSync } from 'node:fs'
+import { writeFileSync, mkdirSync, mkdtempSync, utimesSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { zipSync, strToU8 } from 'fflate'
@@ -95,6 +95,22 @@ test('list_packages is offered only when serving a directory', () => {
   const forDir = handle(dirScope, { jsonrpc: '2.0', id: 1, method: 'tools/list' }, '0.1.0')
   assert.ok(!forFile.result.tools.some((t) => t.name === 'list_packages'))
   assert.equal(forDir.result.tools[0].name, 'list_packages')
+})
+
+test('list_packages gives a size and a date, newest first', () => {
+  // Bare names sorted alphabetically put the newest package last, because the name
+  // embeds the capture time. An agent had to read the timestamps out of the filenames.
+  const older = new Date('2026-09-01T10:00:00Z')
+  const newer = new Date('2026-09-08T21:21:00Z')
+  utimesSync(join(dir, 'one.zip'), older, older)
+  utimesSync(join(dir, 'two.zip'), newer, newer)
+
+  const text = call(dirScope, 'list_packages').result.content[0].text
+  const lines = text.split('\n').filter((l) => l.includes('.zip'))
+  assert.equal(lines.length, 2)
+  assert.match(lines[0], /^two\.zip\s+\d+\s+2026-09-08 /)
+  assert.match(lines[1], /^one\.zip\s+\d+\s+2026-09-01 /)
+  assert.match(text, /^2 packages, newest first\./)
 })
 
 test('every tool declares an object input schema', () => {

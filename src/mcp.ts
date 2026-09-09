@@ -61,6 +61,54 @@ export function packagesIn(scope: Scope): string[] {
     .sort()
 }
 
+export interface PackageRow {
+  name: string
+  bytes: number
+  modified: Date
+}
+
+/**
+ * The same names, with enough to tell them apart, newest first.
+ *
+ * Bare names were not enough. Package names embed the capture time, so sorting them
+ * alphabetically puts the newest one last, and an agent asked about "the bug I just
+ * captured" had to read twenty timestamps out of twenty filenames and hope. One did
+ * exactly that, got it right, and said it was guessing.
+ *
+ * The timestamp is the file's own, from stat, rather than the one inside report.json.
+ * Reading the real capture time means opening and inflating every archive in the
+ * directory to answer a question about which one to open, and for a package written
+ * once at export the two agree.
+ */
+export function packageRows(scope: Scope): PackageRow[] {
+  const dir = scope.dir
+  const rows = packagesIn(scope).map((name) => {
+    const stat = statSync(dir ? join(dir, name) : scope.file!)
+    return { name, bytes: stat.size, modified: stat.mtime }
+  })
+  return rows.sort((a, b) => b.modified.getTime() - a.modified.getTime())
+}
+
+/** Local time, to agree with the timestamps the extension puts in the filenames. */
+function stamp(at: Date): string {
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return (
+    `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())} ` +
+    `${pad(at.getHours())}:${pad(at.getMinutes())}`
+  )
+}
+
+export function renderPackages(scope: Scope): string {
+  const rows = packageRows(scope)
+  if (!rows.length) return 'No .zip packages in this directory.'
+  const width = Math.max(...rows.map((r) => r.name.length))
+  const head = `${rows.length} package${rows.length === 1 ? '' : 's'}, newest first.`
+  const body = rows.map(
+    (r) => `${r.name.padEnd(width)} ${String(r.bytes).padStart(9)}  ${stamp(r.modified)}`,
+  )
+  return [head, '', ...body].join('\n')
+}
+
 /**
  * A name from the agent becomes a path here, and only here.
  *
@@ -153,7 +201,9 @@ function tools(scope: Scope): Tool[] {
   if (scope.dir) {
     list.unshift({
       name: 'list_packages',
-      description: 'The bug packages this server is serving, by name.',
+      description:
+        'The bug packages this server is serving, newest first, with the size and ' +
+        'timestamp of each. Use the name in the "package" argument of the other tools.',
       inputSchema: { type: 'object', properties: {} },
     })
   }
@@ -163,10 +213,7 @@ function tools(scope: Scope): Tool[] {
 function callTool(scope: Scope, name: string, args: Record<string, unknown>): string {
   const which = typeof args.package === 'string' ? args.package : undefined
 
-  if (name === 'list_packages') {
-    const found = packagesIn(scope)
-    return found.length ? found.join('\n') : 'No .zip packages in this directory.'
-  }
+  if (name === 'list_packages') return renderPackages(scope)
 
   const pkg = openInScope(scope, which)
   switch (name) {
