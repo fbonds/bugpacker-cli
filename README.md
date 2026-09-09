@@ -51,14 +51,40 @@ which needs it on disk.
 
 ## Use it from a coding agent
 
-> Not implemented yet. This is what it will be.
-
 ```sh
-bugpacker mcp <package.zip>
+bugpacker mcp <package.zip>      # one bug
+bugpacker mcp ~/Downloads        # every package in a directory
 ```
 
-Starts an MCP server over stdio exposing the package as tools an agent can call. Point
-Claude Code, Cursor or any other MCP client at it and ask it to fix the bug.
+Starts an MCP server over stdio. The agent gets `describe_bug`, `get_steps`,
+`get_console`, `get_network`, `list_files` and `get_file`, plus `list_packages` when
+serving a directory.
+
+Register it with Claude Code:
+
+```sh
+claude mcp add bugpacker -- bugpacker mcp ~/Downloads
+```
+
+Then ask it to fix the bug, and it reads the console error, the failing request and the
+repro steps out of the file itself.
+
+### What the agent cannot do
+
+**It never supplies a filesystem path.** The scope is fixed when you launch the server:
+one package, or one directory. Tools address packages by name inside that scope, and a
+name that tries to climb out of it is stripped and then rejected.
+
+That is deliberate. A tool taking a path would be more flexible and would also let a
+model read any file you can, which is not a trade worth making for a tool whose whole
+point is that your bug data stayed put.
+
+### No SDK
+
+The transport is written against the protocol directly. The official SDK pulls express,
+hono, cors, jose and eventsource to support HTTP and OAuth transports a stdio server
+never touches; this package has one dependency, and a tools-only server needs four
+methods of JSON-RPC.
 
 ## Why some commands just print
 

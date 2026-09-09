@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs'
 import { openPackage } from './package.js'
 import { show } from './commands/show.js'
 import { steps, artifact, files, extract } from './commands/artifacts.js'
+import { serve, resolveScope } from './mcp.js'
 
 const USAGE = `bugpacker <command> <package.zip>
 
@@ -23,6 +24,9 @@ const USAGE = `bugpacker <command> <package.zip>
   json              report.json, for piping into something else
   extract [name]    write an artifact to disk, or all of them
                       --out <dir>   where to write, default the current directory
+
+  mcp <path>        serve over stdio for a coding agent. <path> is one package or a
+                    directory of them, and fixes what the agent can reach.
 
   --help            this
   --version         the installed version
@@ -40,6 +44,12 @@ function flag(args: string[], name: string): string | undefined {
   return at === -1 ? undefined : args[at + 1]
 }
 
+/** Read from the installed package, so it cannot drift from what npm put on disk. */
+function installedVersion(): string {
+  const url = new URL('../package.json', import.meta.url)
+  return (JSON.parse(readFileSync(url, 'utf8')) as { version: string }).version
+}
+
 function main(argv: string[]): void {
   const args = argv.slice(2)
 
@@ -48,11 +58,7 @@ function main(argv: string[]): void {
     return
   }
   if (args[0] === '--version' || args[0] === '-v') {
-    // Read from the installed package rather than hardcoded, so it cannot drift from
-    // what npm actually put on disk.
-    const url = new URL('../package.json', import.meta.url)
-    const pkg = JSON.parse(readFileSync(url, 'utf8')) as { version: string }
-    process.stdout.write(`${pkg.version}\n`)
+    process.stdout.write(`${installedVersion()}\n`)
     return
   }
 
@@ -60,6 +66,16 @@ function main(argv: string[]): void {
   const positional = args.slice(1).filter((a) => !a.startsWith('--'))
   const target = positional[0]
   if (!target) fail(`${command} needs a package.\n\n${USAGE}`)
+
+  if (command === 'mcp') {
+    try {
+      // stdout is the transport from here on. Nothing else may write to it.
+      serve(resolveScope(target), installedVersion())
+    } catch (error) {
+      fail((error as Error).message)
+    }
+    return
+  }
 
   let pkg
   try {
