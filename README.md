@@ -9,8 +9,8 @@ every form field, and the steps you took. Nothing it captures leaves your machin
 
 This is the tool that reads one back.
 
-> **Status:** early. The package format is stable and published, but this is not
-> released yet. Expect the surface to move.
+> **Status:** 0.1.0, the first release. The package format it reads is stable and
+> published; this reader is new. Expect the surface to move before 1.0.
 
 ## Why it exists
 
