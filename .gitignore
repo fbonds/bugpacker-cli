@@ -141,3 +141,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Test fixtures are generated, never committed. A real capture is somebody's actual
+# browsing session, and this repo is public.
+test/fixtures/*.zip
