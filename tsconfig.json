@@ -15,7 +15,8 @@
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "verbatimModuleSyntax": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmitOnError": true
   },
   "include": ["src"]
 }

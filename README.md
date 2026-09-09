@@ -40,6 +40,14 @@ bugpacker mcp <package.zip>
 Starts an MCP server over stdio exposing the package as tools an agent can call. Point
 Claude Code, Cursor or any other MCP client at it and ask it to fix the bug.
 
+## Why some commands just print
+
+`console` and `network` print what the extension already rendered rather than building
+a second view of the same data. Those files draw the distinction that matters most in
+them, between a request that reached a server and failed and one an ad blocker killed
+before it left the browser, and a second renderer here would be one more thing to keep
+in step with a format that is not ours.
+
 ## The format
 
 Every package contains `report.json`, the machine-readable source of record, alongside
