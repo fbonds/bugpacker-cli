@@ -2,8 +2,20 @@
 
 **Adapted from the Apache Software Foundation Individual Contributor License Agreement
 ("Agreement") V2.2**, read from <https://www.apache.org/licenses/icla.pdf> on
-12 September 2026. Clause numbering 1 through 8 follows the original so that this document
-can be compared against it. Section 9 is additional and is not part of the ASF agreement.
+12 September 2026. Clause numbering 1 through 8 follows the original, so this document can
+be compared against it directly. Two differences are worth knowing before you read further,
+and they are stated here rather than left for someone diffing the two documents to find.
+
+**Section 9 is additional.** It is not part of the ASF agreement. It grants the right to
+relicense Contributions under other terms, including proprietary terms.
+
+**The Foundation's nonprofit undertaking has been removed.** The ASF preamble includes a
+commitment by the Foundation not to use Contributions in a way contrary to the public
+benefit or inconsistent with its nonprofit status and bylaws. There is no equivalent here.
+This project is maintained by an individual with no nonprofit status and no bylaws to point
+at, so that sentence has been deleted rather than reworded, and nothing has been put in its
+place. Read it alongside section 9, which widens how Contributions may be licensed: taken
+together, that is the difference between this agreement and the one it is adapted from.
 
 Thank you for your interest in bugpacker-cli. To clarify the intellectual property license
 granted with Contributions from any person or entity, Fletcher Bonds must have on file a
