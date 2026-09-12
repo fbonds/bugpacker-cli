@@ -4,11 +4,12 @@
   "description": "CLI and MCP server for Bugpacker bug packages. Give a coding agent the console, network and repro steps from a real bug, without any of it leaving your machine.",
   "type": "module",
   "license": "Apache-2.0",
+  "author": "Fletcher Bonds <hello@bugpacker.com> (https://bugpacker.com)",
   "repository": { "type": "git", "url": "git+https://github.com/fbonds/bugpacker-cli.git" },
   "homepage": "https://bugpacker.com",
   "keywords": ["bugpacker", "mcp", "bug-report", "qa", "debugging", "cli"],
   "bin": { "bugpacker": "dist/index.js" },
-  "files": ["dist"],
+  "files": ["dist", "NOTICE"],
   "engines": { "node": ">=20" },
   "scripts": {
     "build": "tsc",
