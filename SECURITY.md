@@ -7,10 +7,8 @@ Email **hello@bugpacker.com**. Do not open a public issue.
 Include what you need to: the version, what you did, what happened, and what you expected.
 A proof of concept helps and is not required.
 
-This is a one-person project, so there is no on-call rotation and no service level to
-promise. What you will get is an acknowledgement that you were read, and an honest answer
-about whether and when it will be fixed. If the answer is that it will not be fixed, you
-will be told that rather than left waiting.
+This is a one-person project. One person reads that mailbox, there is no on-call rotation,
+and there is no service level to promise.
 
 You are welcome to disclose publicly on your own timeline. A note beforehand is appreciated
 so a fix can go out alongside it, but it is a courtesy rather than a condition.
