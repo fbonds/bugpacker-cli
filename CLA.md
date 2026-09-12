@@ -3,8 +3,12 @@
 **Adapted from the Apache Software Foundation Individual Contributor License Agreement
 ("Agreement") V2.2**, read from <https://www.apache.org/licenses/icla.pdf> on
 12 September 2026. Clause numbering 1 through 8 follows the original, so this document can
-be compared against it directly. Two differences are worth knowing before you read further,
-and they are stated here rather than left for someone diffing the two documents to find.
+be compared against it directly.
+
+The differences that bear on what you are agreeing to are set out below, rather than left
+for someone diffing the two documents to find. Everything else that changed is the
+mechanics of signing: the ASF agreement is printed, signed and emailed, and this one is
+agreed to by a comment on a pull request.
 
 **Section 9 is additional.** It is not part of the ASF agreement. It grants the right to
 relicense Contributions under other terms, including proprietary terms.
@@ -15,7 +19,16 @@ benefit or inconsistent with its nonprofit status and bylaws. There is no equiva
 This project is maintained by an individual with no nonprofit status and no bylaws to point
 at, so that sentence has been deleted rather than reworded, and nothing has been put in its
 place. Read it alongside section 9, which widens how Contributions may be licensed: taken
-together, that is the difference between this agreement and the one it is adapted from.
+together, those two are the substantive difference between this agreement and the one it is
+adapted from.
+
+**What is collected about you is different.** The ASF agreement collects your legal name,
+postal address, country and email, tells you which of those become part of a public profile,
+and points at Apache's own privacy policy for how they are handled. None of that applies
+here. This agreement collects no name, address or email, and there is no separate privacy
+policy governing it. What is recorded is your GitHub username and user id, the pull request
+number and the time of your comment, written to a public branch of this repository. The
+section "What is recorded" at the end of this document says exactly where.
 
 Thank you for your interest in bugpacker-cli. To clarify the intellectual property license
 granted with Contributions from any person or entity, Fletcher Bonds must have on file a
