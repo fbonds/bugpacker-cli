@@ -14,12 +14,17 @@ This is the tool that reads one back.
 
 ## Why it exists
 
-Every other tool in this category can hand a coding agent your bug report because it is
-already on their servers. Bugpacker's is a file, so it needs a different route: a local
-reader for the file you already have.
+Jam, BugHerd and Usersnap can all hand a coding agent your bug report, because the
+capture is already on their servers.<sup>1</sup> Bugpacker's is a file on your disk, so it
+needs a different route: a local reader for the file you already have.
 
-Same feature, opposite data path. The agent gets the console error, the failing request
-and the repro steps; nobody else gets anything.
+The agent gets the console error, the failing request and the repro steps. Nobody else
+gets anything.
+
+<sup>1</sup> The five products compared on
+[bugpacker.com/compare](https://bugpacker.com/compare) all store captures on their own
+servers; three of them publish agent access. Each cell there cites the vendor's own page
+and the date it was read.
 
 ## Install
 
@@ -117,6 +122,6 @@ npm run build
 npm test
 ```
 
-## Licence
+## License
 
 Apache-2.0. See [LICENSE](LICENSE).
