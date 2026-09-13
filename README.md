@@ -86,17 +86,17 @@ repro steps out of the file itself.
 
 ### Registering it
 
-Each snippet below was checked against that tool's own documentation on 13 September 2026;
-the URL is given with each. Swap `~/Downloads` for wherever you keep packages, or name a
-single `.zip` to scope it to one bug.
+Each snippet below was checked against that tool's own documentation, linked with the date
+it was read. Swap `~/Downloads` for wherever you keep packages, or name a single `.zip` to
+scope it to one bug.
 
-**Claude Code** ([docs](https://docs.claude.com/en/docs/claude-code/mcp))
+**Claude Code** ([docs](https://docs.claude.com/en/docs/claude-code/mcp), read 13 September 2026)
 
 ```sh
 claude mcp add bugpacker -- bugpacker mcp ~/Downloads
 ```
 
-**Cursor** ([docs](https://cursor.com/docs/context/mcp)) — `~/.cursor/mcp.json` for every
+**Cursor** ([docs](https://cursor.com/docs/context/mcp), read 13 September 2026) — `~/.cursor/mcp.json` for every
 project, or `.cursor/mcp.json` in one project.
 
 ```json
@@ -107,7 +107,7 @@ project, or `.cursor/mcp.json` in one project.
 }
 ```
 
-**Codex** ([docs](https://developers.openai.com/codex/mcp)) — a command rather than a file:
+**Codex** ([docs](https://developers.openai.com/codex/mcp), read 13 September 2026) — a command rather than a file:
 
 ```sh
 codex mcp add bugpacker -- bugpacker mcp ~/Downloads
@@ -122,8 +122,8 @@ command = "bugpacker"
 args = ["mcp", "~/Downloads"]
 ```
 
-**Windsurf** ([docs](https://docs.windsurf.com/windsurf/cascade/mcp)) —
-`~/.codeium/windsurf/mcp_config.json`, same shape as Cursor's.
+**Windsurf** ([docs](https://docs.windsurf.com/windsurf/cascade/mcp), read 13 September
+2026) — `~/.codeium/windsurf/mcp_config.json`, same shape as Cursor's.
 
 ```json
 {
@@ -133,10 +133,10 @@ args = ["mcp", "~/Downloads"]
 }
 ```
 
-That path and format are what Windsurf's documentation gives today, and it now describes
-them as applying to the Cascade agent specifically, having moved under the Devin
-documentation after the acquisition. If your install reads its config from somewhere else,
-that is why, and the `mcpServers` block itself is unchanged.
+On the date above, that documentation URL redirects to `docs.devin.ai`, and the page it
+lands on scopes this configuration to the Cascade agent, describing the Devin Local agent as
+using different files. If your install reads its config from somewhere else, check the
+current page. The `mcpServers` block itself is the same shape either way.
 
 **Anything else that speaks MCP.** Most clients take the same shape in some JSON file of
 their own:
