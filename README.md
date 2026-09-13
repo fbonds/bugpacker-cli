@@ -33,9 +33,20 @@ and the date it was read.
 
 ## Install
 
+Try it without installing anything:
+
+```sh
+npx bugpacker-cli show <package.zip>
+```
+
+Install it when you want it on your `PATH`, which is what the agent setups below assume:
+
 ```sh
 npm install -g bugpacker-cli
 ```
+
+`npx` fetches from the registry on first run. If you are behind an egress allowlist, install
+once and it never touches the network again.
 
 ## Use it from a terminal
 
@@ -70,14 +81,78 @@ Starts an MCP server over stdio. The agent gets `describe_bug`, `get_steps`,
 `get_console`, `get_network`, `list_files` and `get_file`, plus `list_packages` when
 serving a directory.
 
-Register it with Claude Code:
+Then ask it to fix the bug, and it reads the console error, the failing request and the
+repro steps out of the file itself.
+
+### Registering it
+
+Each snippet below was checked against that tool's own documentation on 13 September 2026;
+the URL is given with each. Swap `~/Downloads` for wherever you keep packages, or name a
+single `.zip` to scope it to one bug.
+
+**Claude Code** ([docs](https://docs.claude.com/en/docs/claude-code/mcp))
 
 ```sh
 claude mcp add bugpacker -- bugpacker mcp ~/Downloads
 ```
 
-Then ask it to fix the bug, and it reads the console error, the failing request and the
-repro steps out of the file itself.
+**Cursor** ([docs](https://cursor.com/docs/context/mcp)) — `~/.cursor/mcp.json` for every
+project, or `.cursor/mcp.json` in one project.
+
+```json
+{
+  "mcpServers": {
+    "bugpacker": { "command": "bugpacker", "args": ["mcp", "~/Downloads"] }
+  }
+}
+```
+
+**Codex** ([docs](https://developers.openai.com/codex/mcp)) — a command rather than a file:
+
+```sh
+codex mcp add bugpacker -- bugpacker mcp ~/Downloads
+```
+
+It writes to `~/.codex/config.toml`, which is TOML rather than JSON and is the only format
+Codex accepts. To edit it by hand:
+
+```toml
+[mcp_servers.bugpacker]
+command = "bugpacker"
+args = ["mcp", "~/Downloads"]
+```
+
+**Windsurf** ([docs](https://docs.windsurf.com/windsurf/cascade/mcp)) —
+`~/.codeium/windsurf/mcp_config.json`, same shape as Cursor's.
+
+```json
+{
+  "mcpServers": {
+    "bugpacker": { "command": "bugpacker", "args": ["mcp", "~/Downloads"] }
+  }
+}
+```
+
+That path and format are what Windsurf's documentation gives today, and it now describes
+them as applying to the Cascade agent specifically, having moved under the Devin
+documentation after the acquisition. If your install reads its config from somewhere else,
+that is why, and the `mcpServers` block itself is unchanged.
+
+**Anything else that speaks MCP.** Most clients take the same shape in some JSON file of
+their own:
+
+```json
+{
+  "mcpServers": {
+    "bugpacker": { "command": "bugpacker", "args": ["mcp", "~/Downloads"] }
+  }
+}
+```
+
+If your client resolves commands without your shell's `PATH`, give it the absolute path
+from `which bugpacker`. To skip the global install entirely, use `"command": "npx"` with
+`"args": ["-y", "bugpacker-cli", "mcp", "~/Downloads"]`, at the cost of a registry fetch
+the first time the server starts.
 
 ### What the agent cannot do
 
