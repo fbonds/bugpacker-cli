@@ -18,8 +18,12 @@ Jam, BugHerd and Usersnap can all hand a coding agent your bug report, because t
 capture is already on their servers.<sup>1</sup> Bugpacker's is a file on your disk, so it
 needs a different route: a local reader for the file you already have.
 
-The agent gets the console error, the failing request and the repro steps. Nobody else
-gets anything.
+The agent gets the console error, the failing request and the repro steps, read off your
+disk. Neither the extension nor this reader sends anything anywhere.
+
+What your agent does with it afterwards is yours to decide, and worth being explicit about
+if you are behind an egress allowlist: anything you hand to a cloud-hosted agent goes to
+that agent's provider. Point a local model at it and it goes nowhere at all.
 
 <sup>1</sup> The five products compared on
 [bugpacker.com/compare](https://bugpacker.com/compare) all store captures on their own
