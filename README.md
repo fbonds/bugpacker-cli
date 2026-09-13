@@ -10,7 +10,8 @@ every form field, and the steps you took. Nothing it captures leaves your machin
 This is the tool that reads one back.
 
 > **Status:** 0.1.0, the first release. The package format it reads is stable and
-> published; this reader is new. Expect the surface to move before 1.0.
+> published; this reader is new. Expect the surface to move before 1.0, which is the point
+> at which the command names and the MCP tool names stop changing.
 
 ## Why it exists
 
