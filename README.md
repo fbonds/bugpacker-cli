@@ -96,7 +96,7 @@ scope it to one bug.
 claude mcp add bugpacker -- bugpacker mcp ~/Downloads
 ```
 
-**Cursor** ([docs](https://cursor.com/docs/context/mcp), read 13 September 2026) — `~/.cursor/mcp.json` for every
+**Cursor** ([docs](https://cursor.com/docs/context/mcp), read 13 September 2026). `~/.cursor/mcp.json` for every
 project, or `.cursor/mcp.json` in one project.
 
 ```json
@@ -107,7 +107,7 @@ project, or `.cursor/mcp.json` in one project.
 }
 ```
 
-**Codex** ([docs](https://developers.openai.com/codex/mcp), read 13 September 2026) — a command rather than a file:
+**Codex** ([docs](https://developers.openai.com/codex/mcp), read 13 September 2026). A command rather than a file:
 
 ```sh
 codex mcp add bugpacker -- bugpacker mcp ~/Downloads
@@ -123,7 +123,7 @@ args = ["mcp", "~/Downloads"]
 ```
 
 **Windsurf** ([docs](https://docs.windsurf.com/windsurf/cascade/mcp), read 13 September
-2026) — `~/.codeium/windsurf/mcp_config.json`, same shape as Cursor's.
+2026). `~/.codeium/windsurf/mcp_config.json`, same shape as Cursor's.
 
 ```json
 {
@@ -178,6 +178,33 @@ building a second view of the same data. Those files draw the distinction that m
 most in them, between a request that reached a server and failed and one an ad blocker
 killed before it left the browser, and a second renderer here would be one more thing
 to keep in step with a format this repo does not own.
+
+## What this does not do yet
+
+### Compare two captures
+
+[bugpacker.com](https://bugpacker.com/roadmap) promises this under "Compare two captures",
+so it is a commitment rather than an idea: attach last Tuesday's package and today's and get
+the difference.
+
+What a package carries that a comparison can work from: the environment, the state of every
+form field, the marked element and the page around it, the findings, the drafted steps, and
+the counts of what was captured. Those are structured and versioned in `report.json`. The
+console output and the network session are files beside it rather than fields inside it, so
+how much of them a comparison can reach is a separate question and not yet settled.
+
+This is possible because the format is structured all the way down, which is also why it
+is the one thing here that is not catching up with a competitor.
+
+### Smaller things
+
+- **`validate`.** Check a package against the schema that travels inside it, and exit
+  non-zero when it fails.
+- **`redactions`.** Show what was removed and the placeholder mapping, from what the
+  package already records.
+- **Filters and projections.** `console --errors-only`, `network --failed`, `--json` over
+  `report.json`. Ergonomics, not capability: everything they would narrow is already
+  printable today.
 
 ## The format
 
