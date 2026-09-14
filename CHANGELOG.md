@@ -39,6 +39,11 @@ has changed since 0.1.0 was published on 2026-09-09, so the compiled output is t
   for script, img and link, which never enter the HAR. The section now says which parts of
   its own promise work today.
 - The README described what an agent does with the output as though this tool did it.
+- `npm test` only worked on Node 22. The glob was quoted, and `node --test` did not expand a
+  quoted glob itself until then, so on Node 16, 18 and 20 it exited 1 with `Could not find
+  '<repo>/test/*.test.js'`. Unquoted now, so the shell expands it, and the suite runs on 18,
+  20 and 22. `CONTRIBUTING.md` says why, and also that Node 16 collapses each file to a
+  single test and so cannot be trusted to report a failure.
 
 ## 0.1.0 (2026-09-09)
 

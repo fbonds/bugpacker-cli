@@ -72,6 +72,22 @@ npm run build
 once emitting on a failed typecheck, which let a test run pass against a build that had not
 compiled.
 
+**Node 18 or newer**, which matches `engines`. Two things about running the suite are worth
+knowing before you lose an afternoon to either.
+
+The test script passes its glob unquoted, so the shell expands it rather than `node --test`.
+That is not a style choice. `node --test` did not expand a quoted glob itself until Node 22,
+so the quoted form failed on 16, 18 and 20 with `Could not find '<repo>/test/*.test.js'`,
+which reads as though the test files are missing rather than as though the runner cannot
+expand a pattern. It exits 1, so nothing could have shipped past it, but the script was
+written on Node 22 and not run anywhere else until 2026-09-13. Do not re-quote it.
+
+Below 18 the suite does something worse than failing. Node 16 collapses each file to a single
+test: `test/args.test.js` reports 1 where Node 18 reports 7, so an assertion failing inside a
+file need not reach the summary. A green run on Node 16 is not a passing suite. The CLI
+itself does run correctly there, which is why `engines` is a floor and this is a note about
+the suite rather than about the tool.
+
 ## Things worth opening an issue about first
 
 A new dependency, a new command, a change to the package format this reads, or anything that
