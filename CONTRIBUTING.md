@@ -72,6 +72,13 @@ npm run build
 once emitting on a failed typecheck, which let a test run pass against a build that had not
 compiled.
 
+`test/build-is-current.test.js` fails the suite when any file in `src/` is newer than what
+was compiled from it. That is what a failed `tsc` looks like from inside the suite, because
+`noEmitOnError` leaves the previous `dist/` in place and every test file imports from there,
+so a stale run reads as a pass. It lives in the suite rather than in the `npm test` script
+because the script's `&&` already stops there; the gap is `node --test test/*.test.js` on its
+own, a single test file, or a one-off `node dist/index.js` while verifying something.
+
 **Node 18 or newer**, which matches `engines`. Two things about running the suite are worth
 knowing before you lose an afternoon to either.
 
