@@ -12,6 +12,11 @@ single line of valid JSON from any client.
 
 ### Added
 
+- **`network --failed`**, which drops the ad-blocked half of `network-errors.log` and keeps
+  the requests that reached a server. It splits the extension's own rendering on the
+  extension's own heading rather than re-deriving anything, and a package without that
+  heading is an error rather than the whole file handed back unfiltered.
+
 - **`diff`**, and a `compare_packages` MCP tool that names two packages in scope rather
   than taking paths. Compares environment, steps, console errors, network, form state, the
   marked element, counts and the file list field by field, and the rest of the console plus
@@ -50,6 +55,11 @@ single line of valid JSON from any client.
   the README, in the module, and in the MCP tool description, which is the only
   documentation an agent ever reads.
 
+- README: `json` and `--json` are different things, said in its own short section.
+  `bugpacker json` is how you get the report and there is no second spelling of it;
+  `--json` means a command's own output in machine-readable form, which only `validate`
+  has.
+
 - `LICENSE` (Apache-2.0) and `NOTICE`, with ownership stated in `package.json`.
 - `CLA.md`, adapted from the Apache Software Foundation ICLA V2.2. Section 9 is additional
   and grants the right to relicense contributions, including under terms that are not open
@@ -73,6 +83,13 @@ single line of valid JSON from any client.
 - Install instructions lead with `npx` instead of a global install.
 
 ### Fixed
+
+- **A flag meant for one command was accepted by every command and ignored.** `args.ts`
+  validated flag names globally and knew nothing about which command took what, so
+  `show pkg.zip --json` parsed cleanly, printed prose and said nothing. That is the same
+  silent acceptance the file was written to prevent, one level up, and it arrived with the
+  `--json` that `validate` needed. Flags are now declared per command, and a flag another
+  command accepts says which one, so a dead end becomes a correction.
 
 - **The MCP server could be killed by one line of valid JSON.** `serve()` called `handle()`
   outside any try, and `handle()` read `.method` off whatever `JSON.parse` returned. A line

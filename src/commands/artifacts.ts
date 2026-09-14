@@ -12,6 +12,32 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import type { BugPackage } from '../package.js'
 
+/**
+ * The two headings `network-errors.log` is built from, written as literals by the
+ * extension's renderer. `--failed` keeps the first block and drops the second.
+ *
+ * This is not the second renderer that file's header rules out. It splits an existing
+ * rendering on a heading the rendering itself uses to draw the distinction that matters
+ * most in it, between a request that reached a server and failed and one that never left
+ * the browser. Nothing here re-derives a line from the HAR.
+ *
+ * The coupling is real and it is one string. If a future package does not carry that
+ * heading, say so rather than returning the whole file as though it had been filtered:
+ * silently handing back everything is how a filter lies.
+ */
+const BLOCKED_HEADING = 'BLOCKED BEFORE REACHING A SERVER'
+
+export function failedOnly(text: string): string {
+  const at = text.indexOf(BLOCKED_HEADING)
+  if (at === -1) {
+    throw new Error(
+      `This package's network-errors.log has no "${BLOCKED_HEADING}" section, so --failed ` +
+        'cannot tell the two apart. Run network without it to see the whole file.',
+    )
+  }
+  return `${text.slice(0, at).trimEnd()}\n`
+}
+
 export function steps(pkg: BugPackage): string {
   const r = pkg.report
   const out: string[] = []

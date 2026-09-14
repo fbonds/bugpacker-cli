@@ -65,6 +65,7 @@ bugpacker show <package.zip>       # everything, summarised
 bugpacker steps <package.zip>      # repro steps, expected and actual
 bugpacker console <package.zip>    # console output, uncaught errors, CSP violations
 bugpacker network <package.zip>    # failed requests, kept apart from ad-blocked noise
+bugpacker network <package.zip> --failed    # drop the ad-blocked half
 bugpacker har <package.zip>        # the full session as HAR
 bugpacker files <package.zip>      # what is in the package
 bugpacker validate <package.zip>   # is this the file the extension wrote?
@@ -183,6 +184,15 @@ hono, cors, jose and eventsource to support HTTP and OAuth transports a stdio se
 never touches; this package has one dependency, and a tools-only server needs four
 methods of JSON-RPC.
 
+## `json` and `--json` are different things
+
+`bugpacker json` prints `report.json`. That is how you get the report, and there is no
+second spelling of it.
+
+`--json` on a command means that command's own output in machine-readable form, not the
+report. Only `validate` has one, because only `validate` produces something that exists
+nowhere else and has a contract a build script can depend on.
+
 ## Why some commands just print
 
 `console`, `network` and `har` print what the extension already rendered rather than
@@ -255,19 +265,12 @@ what changed is not in the package. And captures of different hosts are compared
 refused, with the mismatch said out loud, because staging against production is a real thing
 to want.
 
-## What this does not do yet
-
-### Smaller things
-
-- **Filters and projections.** `console --errors-only`, `network --failed`, `--json` over
-  `report.json`. Ergonomics, not capability: everything they would narrow is already
-  printable today.
-
 ## Not planned
 
-What this will not grow, and one thing that cannot usefully be built here. The constraints
-are properties somebody may be relying on rather than preferences, so they are written down
-instead of waiting in an issue thread.
+What this will not grow, and what is waiting on something other than someone's time. The
+constraints are properties somebody may be relying on rather than preferences, and the two
+that wait say what they are waiting for, so neither reads as a promise nobody is keeping.
+All of it is written down here instead of sitting in an issue thread.
 
 - **No command that reads from an arbitrary filesystem path.** Scope is fixed by whoever
   launches the tool: one package, or one directory of them. Commands address packages by
@@ -288,6 +291,21 @@ instead of waiting in an issue thread.
 - **No writing into a package, and no modifying one.** This reads. Nothing here edits a
   package, re-redacts it, repairs it or writes a file back into it. A package is evidence
   somebody sent you, and a reader that can alter it stops being a reader.
+- **No `console --errors-only`, until the console is in `report.json`.** This one has a
+  trigger rather than a flat no. Filtering the rendered log means knowing three things about
+  a format this repository does not own: that the level is the browser's own word uppercased
+  into a fixed-width column, that `CSP` and `ERROR` are both errors while only one says so,
+  and that indented lines belong to the entry above them. `network --failed` splits on a
+  heading, which is one string; this is three rules about someone else's layout.
+
+  The deciding fact is that it cannot be tested against real data. Across every capture
+  either of us has, the only tokens the log contains are `ERROR` and continuation lines.
+  Not one warning, log line or CSP violation. Every test would be synthetic, and the filter
+  would narrow forty errors down to forty errors on every real package.
+
+  If `report.json` ever carries the console, this becomes a field comparison instead of a
+  parse, and it is worth building that day. Not before.
+
 - **No `redactions` command.** A package records how many values were replaced and under
   which categories, and the artifacts carry stable placeholders such as
   `[EMAIL_1: local 3, domain 11, tld aaa]`. What it does not record is which artifact each

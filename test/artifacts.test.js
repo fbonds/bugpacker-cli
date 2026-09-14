@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { zipSync, strToU8 } from 'fflate'
 
 import { openPackage } from '../dist/package.js'
-import { steps, artifact, files, extract, undigestedRole } from '../dist/commands/artifacts.js'
+import { steps, artifact, files, extract, undigestedRole, failedOnly } from '../dist/commands/artifacts.js'
 import { KNOWN_SCHEMA_VERSION } from '../dist/report.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -142,4 +142,41 @@ test('extract cannot be talked into writing outside the output directory', () =>
   // Forge the escape past the reader's guard, straight into the writer.
   opened.names.push('../escaped.txt')
   assert.throws(() => extract(opened, out), /Refusing to write outside/)
+})
+
+/* -------------------------------------------------------- network --failed -- */
+
+test('--failed keeps the failed block and drops the ad-blocked one', () => {
+  const log = [
+    'FAILED REQUESTS',
+    '---',
+    '[+00:01.000] GET https://api.example.test/pay -> 500',
+    '',
+    'BLOCKED BEFORE REACHING A SERVER',
+    '---',
+    '[+00:02.000] GET https://tracker.example.test/x -> blocked',
+  ].join('\n')
+  const out = failedOnly(log)
+  assert.match(out, /FAILED REQUESTS/)
+  assert.match(out, /api\.example\.test/)
+  assert.doesNotMatch(out, /BLOCKED BEFORE/)
+  assert.doesNotMatch(out, /tracker\.example\.test/)
+})
+
+test('a log with no blocked section is an error, not the whole file handed back', () => {
+  // Silently returning everything is how a filter lies: the caller asked to see one half
+  // and would be shown both with nothing said.
+  assert.throws(
+    () => failedOnly('FAILED REQUESTS\n---\nnothing here\n'),
+    /has no "BLOCKED BEFORE REACHING A SERVER" section/,
+  )
+})
+
+test('--failed does not re-derive anything, it cuts at one heading', () => {
+  // The whole justification for this being allowed under "no second renderer" is that it
+  // splits the extension's own rendering on the extension's own heading. If the text
+  // before the heading were rebuilt rather than sliced, this would catch it.
+  const body = 'FAILED REQUESTS\n---\n  odd   spacing  and  [brackets]  kept  verbatim\n\n'
+  const out = failedOnly(`${body}BLOCKED BEFORE REACHING A SERVER\n---\nx\n`)
+  assert.equal(out, `${body.trimEnd()}\n`)
 })

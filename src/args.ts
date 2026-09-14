@@ -16,12 +16,30 @@
  * silently, which is the failure mode worth spending an error message on.
  */
 
-/** Flags that consume the token after them. */
-const VALUE_FLAGS = new Set(['out'])
+/**
+ * Which flags each command accepts, and of which kind.
+ *
+ * Per command rather than global, because global was the same defect this file was written
+ * to prevent, one level up. `--json` was added for `validate` and `show --json` then parsed
+ * cleanly and did nothing, which is silent acceptance again: the user asked for machine
+ * output, got prose, and was told nothing. A command not in this table takes no flags.
+ *
+ * `values` consume the token after them. `switches` take none. A flag that takes a value has
+ * to be declared, because nothing about `--out ./bug` says whether `./bug` belongs to the
+ * flag or stands alone.
+ */
+const ACCEPTS: Record<string, { values?: readonly string[]; switches?: readonly string[] }> = {
+  extract: { values: ['out'] },
+  validate: { switches: ['json'] },
+  network: { switches: ['failed'] },
+}
 
-/** Flags that take no value. Declared for the same reason VALUE_FLAGS is: so that an
- * unknown flag is refused rather than quietly reinterpreted as something else. */
-const SWITCHES = new Set(['json'])
+/** Every command that accepts a given flag, for an error message that helps. */
+function acceptedBy(name: string): string[] {
+  return Object.entries(ACCEPTS)
+    .filter(([, spec]) => spec.values?.includes(name) || spec.switches?.includes(name))
+    .map(([command]) => command)
+}
 
 export interface Args {
   command: string
@@ -38,6 +56,7 @@ export function parseArgs(argv: string[]): Args {
   const positional: string[] = []
   const flags = new Map<string, string>()
   const switches = new Set<string>()
+  const accepts = ACCEPTS[command] ?? {}
 
   for (let i = 0; i < rest.length; i++) {
     const token = rest[i] as string
@@ -50,15 +69,22 @@ export function parseArgs(argv: string[]): Args {
     const eq = body.indexOf('=')
     const name = eq === -1 ? body : body.slice(0, eq)
 
-    if (SWITCHES.has(name)) {
+    if (accepts.switches?.includes(name)) {
       // `--json=true` is a reasonable thing to type and means nothing here. Saying so
       // beats accepting it and ignoring the value.
       if (eq !== -1) throw new Error(`--${name} takes no value.`)
       switches.add(name)
       continue
     }
-    if (!VALUE_FLAGS.has(name)) {
-      throw new Error(`Unknown option: ${token}`)
+    if (!accepts.values?.includes(name)) {
+      // Naming the command that does take it turns a dead end into a correction. A flag
+      // nothing accepts is a typo and gets the shorter message.
+      const elsewhere = acceptedBy(name)
+      throw new Error(
+        elsewhere.length
+          ? `${command} does not take --${name}. ${elsewhere.join(' and ')} does.`
+          : `Unknown option: ${token}`,
+      )
     }
     const value = eq === -1 ? rest[++i] : body.slice(eq + 1)
     // An empty value would fall through to the default and write somewhere the user

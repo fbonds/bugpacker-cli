@@ -10,7 +10,7 @@
 import { readFileSync } from 'node:fs'
 import { openPackage } from './package.js'
 import { show } from './commands/show.js'
-import { steps, artifact, files, extract } from './commands/artifacts.js'
+import { steps, artifact, files, extract, failedOnly } from './commands/artifacts.js'
 import { validate, passed, renderChecks, checksAsJson } from './commands/validate.js'
 import { diff, renderDiff } from './commands/diff.js'
 import { serve, resolveScope } from './mcp.js'
@@ -22,6 +22,7 @@ const USAGE = `bugpacker <command> <package.zip>
   steps             repro steps, expected and actual
   console           console output, uncaught errors and CSP violations
   network           failed requests, kept apart from ad-blocked noise
+                      --failed      only the ones that reached a server
   har               the full session as HAR, for a HAR viewer
   files             what is in the package
   validate          check the package is what report.json describes
@@ -125,8 +126,10 @@ function main(argv: string[]): void {
         return write(steps(pkg))
       case 'console':
         return write(artifact(pkg, 'console.log'))
-      case 'network':
-        return write(artifact(pkg, 'network-errors.log'))
+      case 'network': {
+        const text = artifact(pkg, 'network-errors.log')
+        return write(switches.has('failed') ? failedOnly(text) : text)
+      }
       case 'har':
         return write(artifact(pkg, 'network.har'))
       case 'files':
