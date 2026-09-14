@@ -12,6 +12,8 @@ import { writeFileSync, mkdirSync, mkdtempSync, utimesSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { zipSync, strToU8 } from 'fflate'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
 import { handle, resolveScope, packagesIn, openInScope } from '../dist/mcp.js'
 import { KNOWN_SCHEMA_VERSION } from '../dist/report.js'
@@ -45,6 +47,7 @@ function makePackage(dir, name) {
   return path
 }
 
+const ENTRY = fileURLToPath(new URL('../dist/index.js', import.meta.url))
 const dir = mkdtempSync(join(tmpdir(), 'bp-mcp-'))
 mkdirSync(dir, { recursive: true })
 const onePath = makePackage(dir, 'one.zip')
@@ -183,3 +186,59 @@ test('get_file cannot escape the package either', () => {
 test('naming a package in the directory reads that one', () => {
   assert.match(call(dirScope, 'get_steps', { package: 'two.zip' }).result.content[0].text, /Apply/)
 })
+
+/* ----------------------------------------------------------------- transport -- */
+
+/**
+ * These drive the real binary over stdio rather than calling handle() directly,
+ * because the defect they protect against was in serve(), between JSON.parse and
+ * handle(), where a unit test on handle() cannot reach.
+ *
+ * `null` is valid JSON and is not an object. Reading .method off it threw, ended the
+ * process, and took the agent's MCP connection with it. This is the transport layer of
+ * something registered globally with a coding agent, so nothing a client sends may end
+ * the session.
+ */
+function talk(scopePath, lines) {
+  const res = spawnSync(process.execPath, [ENTRY, 'mcp', scopePath], {
+    input: lines.map((l) => `${l}\n`).join(''),
+    encoding: 'utf8',
+  })
+  return {
+    status: res.status,
+    stderr: res.stderr,
+    replies: res.stdout.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l)),
+  }
+}
+
+test('valid JSON that is not a request is answered, not fatal', () => {
+  for (const line of ['null', '42', '"x"', '[]', 'true']) {
+    const { status, replies, stderr } = talk(dir, [line])
+    assert.equal(status, 0, `${line} killed the server: ${stderr}`)
+    assert.equal(replies.length, 1, `${line} got no reply`)
+    assert.deepEqual(replies[0], {
+      jsonrpc: '2.0',
+      id: null,
+      error: { code: -32600, message: 'Invalid Request' },
+    })
+  }
+})
+
+test('the server survives a run of bad lines and still answers the next request', () => {
+  const { status, replies } = talk(dir, [
+    'null', '42', '"x"', '[]', 'not json at all',
+    '{"jsonrpc":"2.0","id":9,"method":"tools/list"}',
+  ])
+  assert.equal(status, 0)
+  assert.equal(replies.length, 6)
+  assert.equal(replies[4].error.code, -32700, 'unparseable input is still a parse error')
+  assert.equal(replies[5].id, 9)
+  assert.equal(replies[5].result.tools.length, 7)
+})
+
+// The -32603 branch in serve() has no reachable trigger to test against: every path
+// inside handle() that touches the filesystem already runs inside tools/call's own
+// try, which reports failure as a tool result. It is defense in depth for the next
+// thing added to handle(), and it was verified by deliberately making handle() throw
+// and confirming the client got -32603 while the transport stayed up. A test that
+// cannot fail would be worse than this comment.

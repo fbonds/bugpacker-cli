@@ -5,9 +5,10 @@ is a separate product and is not covered here.
 
 ## 0.1.1 (unreleased)
 
-Documentation, licensing and metadata, plus one fix to what the build emits. **The compiled
-JavaScript is unchanged** and the source maps now carry their sources. Nothing under `src/`
-has changed since 0.1.0 was published on 2026-09-09.
+Documentation, metadata, source maps that resolve, and one crash fix.
+
+The crash is the reason to take this one. Every published version so far can be ended by a
+single line of valid JSON from any client.
 
 ### Added
 
@@ -34,6 +35,16 @@ has changed since 0.1.0 was published on 2026-09-09.
 
 ### Fixed
 
+- **The MCP server could be killed by one line of valid JSON.** `serve()` called `handle()`
+  outside any try, and `handle()` read `.method` off whatever `JSON.parse` returned. A line
+  containing `null` threw a `TypeError`, ended the process, and took the agent's connection
+  with it, presenting as the tool being unreliable rather than as a client sending nonsense.
+  `42`, `"x"`, `[]` and `true` did not crash but fell through to a silent no-reply, which is
+  its own defect. All of them are now answered with `-32600 Invalid Request`, which is what
+  the JSON-RPC spec has that code for. The call to `handle()` is also wrapped, so an
+  unexpected throw costs the one call and returns `-32603` rather than costing the transport.
+  This is the layer the README asks you to register globally with a coding agent, so nothing
+  a client sends may end the session.
 - The README claimed the package format is "structured all the way down", and it is not.
   Console errors reach `report.json` as a step and a finding, so a comparison can read them.
   Warnings, log lines and CSP violations do not, and neither do subresource load failures

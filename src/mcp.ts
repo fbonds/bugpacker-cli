@@ -301,14 +301,36 @@ export function serve(scope: Scope, version: string): void {
   lines.on('line', (line) => {
     const trimmed = line.trim()
     if (!trimmed) return
-    let message: Rpc
+    let parsed: unknown
     try {
-      message = JSON.parse(trimmed) as Rpc
+      parsed = JSON.parse(trimmed)
     } catch {
       send({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } })
       return
     }
-    const response = handle(scope, message, version)
+    // `null`, `42`, `"x"` and `[]` are all valid JSON and none of them is a request.
+    // Reading .method off null threw and ended the process, taking the agent's connection
+    // with it; the rest fell through to a silent no-reply, which is its own kind of wrong.
+    // The spec has a code for exactly this, so send it rather than swallowing the line.
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      send({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid Request' } })
+      return
+    }
+    const message = parsed as Rpc
+    // Nothing a client sends may end the session. handle() reaches the filesystem for
+    // tools/list and for every tool call, so an unexpected throw is not hypothetical, and
+    // uncaught here it costs the whole transport rather than the one call that caused it.
+    let response: object | null
+    try {
+      response = handle(scope, message, version)
+    } catch (e) {
+      send({
+        jsonrpc: '2.0',
+        id: message.id ?? null,
+        error: { code: -32603, message: (e as Error).message },
+      })
+      return
+    }
     if (response) send(response)
   })
 }
