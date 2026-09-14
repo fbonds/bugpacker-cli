@@ -7,6 +7,15 @@
  * the more useful half anyway: a package is a file somebody sent you, and the question
  * worth answering is whether it is the file the extension wrote.
  *
+ * The limit, stated here because every caller inherits it. report.json is unsigned and
+ * describes itself, so anyone who edits an artifact and updates the SHA-256 recorded for it
+ * passes everything below. Verified by building exactly that package. This catches
+ * corruption and careless alteration; it does not catch a forgery, and nothing in the
+ * format can. manifest.json records no digests, fingerprint is a deduplication key over the
+ * host, path, marked element and error text rather than a content hash, and the two
+ * metadata files carry deliberately different shapes of the same facts so neither witnesses
+ * the other. Do not let this grow a claim it cannot support.
+ *
  * Two levels. A failure means the package is damaged or altered and nothing downstream
  * should trust it. A warning means something is worth reading but is not evidence the file
  * was touched: a report miscounting itself, which is a defect in whatever wrote it, or an

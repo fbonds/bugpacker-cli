@@ -210,6 +210,17 @@ report that miscounts itself, which is a defect in whatever wrote it rather than
 the file was touched, and an entry this version does not recognise, which is what a newer
 extension looks like and also what an inserted file looks like.
 
+**What it cannot do.** `report.json` is unsigned and describes itself. Anyone who edits an
+artifact and updates the SHA-256 recorded for it passes every check here, verified by doing
+exactly that. So this detects corruption and careless alteration, not a deliberate forgery.
+
+Nothing in the package can detect one. `manifest.json` records no digest of anything, and
+`fingerprint` is a deduplication key derived from the host, the path, the marked element and
+the error text rather than a hash of the contents. The two metadata files deliberately carry
+different shapes of the same facts, so they cannot serve as witnesses for each other either.
+Establishing that a package is the one a particular person captured would need something the
+format does not carry.
+
 This is not JSON Schema validation. The schema does travel inside every package, but
 applying it literally needs a schema validator, and this tool has one runtime dependency.
 

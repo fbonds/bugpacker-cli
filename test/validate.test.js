@@ -193,3 +193,22 @@ test('every check declares a level, because the exit code depends on it', () => 
     assert.ok(c.detail.length > 0, `${c.name} has no detail`)
   }
 })
+
+test('a consistent forgery passes, which is the limit of what this can do', () => {
+  // Not a bug. report.json is unsigned and describes itself, so an artifact altered
+  // together with the SHA-256 recorded for it is indistinguishable from the original.
+  // This is here so the limit is a fact the suite states rather than something a later
+  // reader discovers and files. If a check is ever added that catches this, it will fail
+  // here first and that is the right place to argue about it.
+  const path = buildValid('forged.zip', (entries, report) => {
+    const b = Uint8Array.from(entries['console.log'])
+    b[3] = b[3] ^ 0x20
+    const files = report.files.map((f) =>
+      f.name === 'console.log' ? { ...f, sha256: sha256(b), bytes: b.length } : f,
+    )
+    return { entries: { ...entries, 'console.log': b }, report: { ...report, files } }
+  })
+  const checks = validate(openPackage(path))
+  assert.deepEqual(failed(checks), [])
+  assert.equal(passed(checks), true)
+})

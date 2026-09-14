@@ -242,3 +242,14 @@ test('the server survives a run of bad lines and still answers the next request'
 // thing added to handle(), and it was verified by deliberately making handle() throw
 // and confirming the client got -32603 while the transport stayed up. A test that
 // cannot fail would be worse than this comment.
+
+test('the validate tool tells an agent what a pass does not mean', () => {
+  // The tool description is the only documentation an agent ever sees. If the
+  // corruption-versus-forgery distinction is not in it, an agent handed a clean result
+  // will report the package as authentic, which validate cannot establish.
+  const res = handle(fileScope, { jsonrpc: '2.0', id: 1, method: 'tools/list' }, '0.1.0')
+  const tool = res.result.tools.find((t) => t.name === 'validate')
+  assert.ok(tool, 'validate is not in tools/list')
+  assert.match(tool.description, /corruption rather than forgery/)
+  assert.match(tool.description, /report\.json is unsigned/)
+})

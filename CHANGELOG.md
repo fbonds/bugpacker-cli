@@ -38,6 +38,15 @@ single line of valid JSON from any client.
   `console.log` of a real capture, repacked at the same length: the digest check fails
   alone and the other seven stay green.
 
+  **It detects corruption, not forgery, and the documentation says so.** `report.json` is
+  unsigned and describes itself, so a package whose artifact was altered along with the
+  SHA-256 recorded for it passes every check. Confirmed by building that package. Nothing
+  in the format can catch it: `manifest.json` records no digests, `fingerprint` is a
+  deduplication key rather than a content hash, and the two metadata files carry
+  deliberately different shapes of the same facts so neither witnesses the other. Stated in
+  the README, in the module, and in the MCP tool description, which is the only
+  documentation an agent ever reads.
+
 ### Changed
 
 - `engines` is now `>=18`, was `>=20`. Node 20 reached end of life on 2026-04-30 and the old

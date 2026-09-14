@@ -204,7 +204,10 @@ function tools(scope: Scope): Tool[] {
         'Check that a package is intact and internally consistent: every file matches ' +
         'the SHA-256 and byte length report.json records for it, the inventory agrees ' +
         'both ways, and the report agrees with itself. Use it before trusting a package ' +
-        'somebody sent you. It is not schema validation.',
+        'somebody sent you. It is not schema validation, and it detects corruption rather ' +
+        'than forgery: report.json is unsigned, so someone who altered an artifact and ' +
+        'updated the digest recorded for it would pass. Do not describe a passing result ' +
+        'as proof the package is authentic.',
       inputSchema: { type: 'object', properties: { ...PACKAGE_ARG } },
     },
   ]
