@@ -215,18 +215,20 @@ package is a file with a published schema and a hosted video is not.
 
 ### Smaller things
 
-- **`validate`.** Check a package against the schema that travels inside it, and exit
-  non-zero when it fails.
-- **`redactions`.** Show what was removed and the placeholder mapping, from what the
-  package already records.
+- **`validate`.** Check a package's integrity and internal consistency and exit non-zero
+  when it fails: recompute the SHA-256 of every entry against what `report.json` records,
+  check the inventory both ways, and check the totals the report states about itself. Not
+  JSON Schema validation, which would need a schema validator and a second runtime
+  dependency.
 - **Filters and projections.** `console --errors-only`, `network --failed`, `--json` over
   `report.json`. Ergonomics, not capability: everything they would narrow is already
   printable today.
 
 ## Not planned
 
-Four things this will not grow. Each is a property somebody may be relying on rather than a
-preference, so they are written down here instead of waiting in an issue thread.
+What this will not grow, and one thing that cannot usefully be built here. The constraints
+are properties somebody may be relying on rather than preferences, so they are written down
+instead of waiting in an issue thread.
 
 - **No command that reads from an arbitrary filesystem path.** Scope is fixed by whoever
   launches the tool: one package, or one directory of them. Commands address packages by
@@ -247,6 +249,19 @@ preference, so they are written down here instead of waiting in an issue thread.
 - **No writing into a package, and no modifying one.** This reads. Nothing here edits a
   package, re-redacts it, repairs it or writes a file back into it. A package is evidence
   somebody sent you, and a reader that can alter it stops being a reader.
+- **No `redactions` command.** A package records how many values were replaced and under
+  which categories, and the artifacts carry stable placeholders such as
+  `[EMAIL_1: local 3, domain 11, tld aaa]`. What it does not record is which artifact each
+  redaction landed in, so a command here could do no more than reformat the few numbers
+  `show` already prints. This waits on the extension recording per-artifact redaction
+  sites, which is a change there and not here.
+
+  Worth knowing before reaching for the obvious alternative: **the map from original value
+  to placeholder lives only in memory while a capture is being scrubbed, and is never
+  written into the package.** It is keyed by the original values, so persisting it would
+  hand back everything redaction removed. Anything built here can read where a placeholder
+  appears. Nothing can read what it replaced, and that is the design rather than a gap in
+  it.
 
 ## The format
 

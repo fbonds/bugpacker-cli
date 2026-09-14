@@ -45,6 +45,14 @@ single line of valid JSON from any client.
   unexpected throw costs the one call and returns `-32603` rather than costing the transport.
   This is the layer the README asks you to register globally with a coding agent, so nothing
   a client sends may end the session.
+- The README promised a `redactions` command showing "the placeholder mapping, from what the
+  package already records". No such mapping is recorded, and none can be: it is keyed by the
+  original values, so writing it into the package would hand back everything redaction
+  removed. The entry is gone and `Not planned` now says what a future version could read,
+  which is where placeholders appear, and what it never can, which is what they replaced.
+- `validate` was described as checking a package "against the schema that travels inside
+  it". That framing implied JSON Schema validation and a second runtime dependency to do it.
+  Reworded to integrity and internal consistency, which is the half worth having.
 - The README claimed the package format is "structured all the way down", and it is not.
   Console errors reach `report.json` as a step and a finding, so a comparison can read them.
   Warnings, log lines and CSP violations do not, and neither do subresource load failures
