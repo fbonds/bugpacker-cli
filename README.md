@@ -190,11 +190,18 @@ the difference.
 What a package carries that a comparison can work from: the environment, the state of every
 form field, the marked element and the page around it, the findings, the drafted steps, and
 the counts of what was captured. Those are structured and versioned in `report.json`. The
-console output and the network session are files beside it rather than fields inside it, so
-how much of them a comparison can reach is a separate question and not yet settled.
+console output and the network session are files beside it rather than fields inside it, and
+how much of them a comparison can reach is the part worth being precise about.
 
-This is possible because the format is structured all the way down, which is also why it
-is the one thing here that is not catching up with a competitor.
+The console is the sharper half of that. A console error reaches `report.json` as a step
+and as a finding, so a comparison can read it. A warning, a log line or a CSP violation
+exists only in the rendered `console.log`, and a subresource load failure for a script, an
+img or a link exists only in `network-errors.log`, both of them text laid out for a person
+to read. Closing that means adding them to `report.json` rather than writing a smarter
+comparison here.
+
+It is still the one thing on this list that is not catching up with a competitor, because a
+package is a file with a published schema and a hosted video is not.
 
 ### Smaller things
 
