@@ -16,8 +16,12 @@
  * silently, which is the failure mode worth spending an error message on.
  */
 
-/** Flags that consume the token after them. Everything else is a bare switch. */
+/** Flags that consume the token after them. */
 const VALUE_FLAGS = new Set(['out'])
+
+/** Flags that take no value. Declared for the same reason VALUE_FLAGS is: so that an
+ * unknown flag is refused rather than quietly reinterpreted as something else. */
+const SWITCHES = new Set(['json'])
 
 export interface Args {
   command: string
@@ -25,12 +29,15 @@ export interface Args {
   positional: string[]
   /** Flag values by name, without the leading dashes. */
   flags: Map<string, string>
+  /** Bare switches that were given, without the leading dashes. */
+  switches: Set<string>
 }
 
 export function parseArgs(argv: string[]): Args {
   const [command = '', ...rest] = argv
   const positional: string[] = []
   const flags = new Map<string, string>()
+  const switches = new Set<string>()
 
   for (let i = 0; i < rest.length; i++) {
     const token = rest[i] as string
@@ -43,6 +50,13 @@ export function parseArgs(argv: string[]): Args {
     const eq = body.indexOf('=')
     const name = eq === -1 ? body : body.slice(0, eq)
 
+    if (SWITCHES.has(name)) {
+      // `--json=true` is a reasonable thing to type and means nothing here. Saying so
+      // beats accepting it and ignoring the value.
+      if (eq !== -1) throw new Error(`--${name} takes no value.`)
+      switches.add(name)
+      continue
+    }
     if (!VALUE_FLAGS.has(name)) {
       throw new Error(`Unknown option: ${token}`)
     }
@@ -53,5 +67,5 @@ export function parseArgs(argv: string[]): Args {
     flags.set(name, value)
   }
 
-  return { command, positional, flags }
+  return { command, positional, flags, switches }
 }

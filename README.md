@@ -67,6 +67,7 @@ bugpacker console <package.zip>    # console output, uncaught errors, CSP violat
 bugpacker network <package.zip>    # failed requests, kept apart from ad-blocked noise
 bugpacker har <package.zip>        # the full session as HAR
 bugpacker files <package.zip>      # what is in the package
+bugpacker validate <package.zip>   # is this the file the extension wrote?
 bugpacker json <package.zip>       # report.json, for piping into something else
 ```
 
@@ -189,6 +190,29 @@ most in them, between a request that reached a server and failed and one an ad b
 killed before it left the browser, and a second renderer here would be one more thing
 to keep in step with a format this repo does not own.
 
+## Checking a package you were sent
+
+```sh
+bugpacker validate <package.zip>
+bugpacker validate <package.zip> --json     # for CI
+```
+
+A package is a file somebody sent you, and `report.json` records a SHA-256 and a byte
+length for every artifact beside it. `validate` recomputes them.
+
+Exit `0` when nothing failed, `1` when something did, `2` when there was no package to
+check, so a wrong path and a tampered capture do not look the same to a build.
+
+**Failures** mean the package is not what `report.json` describes: a digest that does not
+match, a length that does not match, a listed file that is not there, or a file count that
+disagrees with the archive. **Warnings** print and leave the exit code alone. They cover a
+report that miscounts itself, which is a defect in whatever wrote it rather than evidence
+the file was touched, and an entry this version does not recognise, which is what a newer
+extension looks like and also what an inserted file looks like.
+
+This is not JSON Schema validation. The schema does travel inside every package, but
+applying it literally needs a schema validator, and this tool has one runtime dependency.
+
 ## What this does not do yet
 
 ### Compare two captures
@@ -215,11 +239,6 @@ package is a file with a published schema and a hosted video is not.
 
 ### Smaller things
 
-- **`validate`.** Check a package's integrity and internal consistency and exit non-zero
-  when it fails: recompute the SHA-256 of every entry against what `report.json` records,
-  check the inventory both ways, and check the totals the report states about itself. Not
-  JSON Schema validation, which would need a schema validator and a second runtime
-  dependency.
 - **Filters and projections.** `console --errors-only`, `network --failed`, `--json` over
   `report.json`. Ergonomics, not capability: everything they would narrow is already
   printable today.

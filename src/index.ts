@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs'
 import { openPackage } from './package.js'
 import { show } from './commands/show.js'
 import { steps, artifact, files, extract } from './commands/artifacts.js'
+import { validate, passed, renderChecks, checksAsJson } from './commands/validate.js'
 import { serve, resolveScope } from './mcp.js'
 import { parseArgs } from './args.js'
 
@@ -22,6 +23,8 @@ const USAGE = `bugpacker <command> <package.zip>
   network           failed requests, kept apart from ad-blocked noise
   har               the full session as HAR, for a HAR viewer
   files             what is in the package
+  validate          check the package is what report.json describes
+                      --json        machine-readable, for CI
   json              report.json, for piping into something else
   extract [name]    write an artifact to disk, or all of them
                       --out <dir>   where to write, default the current directory
@@ -64,7 +67,7 @@ function main(argv: string[]): void {
   } catch (error) {
     fail(`${(error as Error).message}\n\n${USAGE}`)
   }
-  const { command, positional, flags } = parsed
+  const { command, positional, flags, switches } = parsed
   const target = positional[0]
   if (!target) fail(`${command} needs a package.\n\n${USAGE}`)
 
@@ -82,6 +85,14 @@ function main(argv: string[]): void {
   try {
     pkg = openPackage(target)
   } catch (error) {
+    // validate has a CI contract and needs these apart: 1 means the package opened and
+    // is not what report.json describes, 2 means there was nothing here to check. A
+    // wrong path and a tampered capture should not look the same to a build. Every
+    // other command has no such contract and keeps the single failure code.
+    if (command === 'validate') {
+      process.stderr.write(`${(error as Error).message}\n`)
+      process.exit(2)
+    }
     fail((error as Error).message)
   }
 
@@ -103,6 +114,14 @@ function main(argv: string[]): void {
         return write(artifact(pkg, 'network.har'))
       case 'files':
         return write(files(pkg))
+      case 'validate': {
+        const checks = validate(pkg)
+        write(switches.has('json') ? checksAsJson(pkg, checks) : renderChecks(pkg, checks))
+        // Exit 1 on failure, 2 is openPackage refusing the file, which happened earlier
+        // if it was going to. Warnings deliberately leave this at 0.
+        if (!passed(checks)) process.exit(1)
+        return
+      }
       case 'json':
         return write(JSON.stringify(pkg.report, null, 2))
       case 'extract':

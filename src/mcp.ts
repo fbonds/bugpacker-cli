@@ -23,6 +23,7 @@ import { openPackage } from './package.js'
 import type { BugPackage } from './package.js'
 import { show } from './commands/show.js'
 import { steps, files } from './commands/artifacts.js'
+import { validate as validateChecks, renderChecks } from './commands/validate.js'
 
 /**
  * Echoed back to the client rather than asserted.
@@ -197,6 +198,15 @@ function tools(scope: Scope): Tool[] {
         required: ['name'],
       },
     },
+    {
+      name: 'validate',
+      description:
+        'Check that a package is intact and internally consistent: every file matches ' +
+        'the SHA-256 and byte length report.json records for it, the inventory agrees ' +
+        'both ways, and the report agrees with itself. Use it before trusting a package ' +
+        'somebody sent you. It is not schema validation.',
+      inputSchema: { type: 'object', properties: { ...PACKAGE_ARG } },
+    },
   ]
   if (scope.dir) {
     list.unshift({
@@ -227,6 +237,8 @@ function callTool(scope: Scope, name: string, args: Record<string, unknown>): st
       return textOr(pkg, 'network-errors.log')
     case 'list_files':
       return files(pkg)
+    case 'validate':
+      return renderChecks(pkg, validateChecks(pkg))
     case 'get_file': {
       if (typeof args.name !== 'string') throw new Error('get_file needs a "name".')
       return textOr(pkg, basename(args.name))

@@ -233,7 +233,7 @@ test('the server survives a run of bad lines and still answers the next request'
   assert.equal(replies.length, 6)
   assert.equal(replies[4].error.code, -32700, 'unparseable input is still a parse error')
   assert.equal(replies[5].id, 9)
-  assert.equal(replies[5].result.tools.length, 7)
+  assert.equal(replies[5].result.tools.length, 8)
 })
 
 // The -32603 branch in serve() has no reachable trigger to test against: every path

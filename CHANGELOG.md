@@ -23,6 +23,21 @@ single line of valid JSON from any client.
   planned"; what 1.0 would mean; and the Node versions this was tested against.
 - This changelog.
 
+### Added
+
+- **`validate`**, and a `validate` MCP tool. Recomputes the SHA-256 and byte length of
+  every artifact against what `report.json` records, checks the inventory both ways, and
+  checks the totals the report states about itself. Exit `0`, `1` for a failure, `2` when
+  there was no package to read. `--json` for CI, on this command only.
+
+  Failures mean the package is not what `report.json` describes. Warnings print and leave
+  the exit code alone: a report miscounting itself is an extension bug rather than a
+  damaged package, and a check that turns CI red for one is a check CI learns to ignore.
+
+  Verified against real tampered packages rather than fixtures alone. One byte changed in
+  `console.log` of a real capture, repacked at the same length: the digest check fails
+  alone and the other seven stay green.
+
 ### Changed
 
 - `engines` is now `>=18`, was `>=20`. Node 20 reached end of life on 2026-04-30 and the old
