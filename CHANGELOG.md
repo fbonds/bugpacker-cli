@@ -12,19 +12,6 @@ single line of valid JSON from any client.
 
 ### Added
 
-- `LICENSE` (Apache-2.0) and `NOTICE`, with ownership stated in `package.json`.
-- `CLA.md`, adapted from the Apache Software Foundation ICLA V2.2. Section 9 is additional
-  and grants the right to relicense contributions, including under terms that are not open
-  source. The differences from the ASF original are set out at the top of the document
-  rather than left for a reader to find by diffing.
-- `CONTRIBUTING.md`, including the constraints a change has to respect, and `SECURITY.md`.
-- README: registration snippets for Claude Code, Cursor, Codex and Windsurf, each carrying
-  the date that tool's own documentation was read; "What this does not do yet"; "Not
-  planned"; what 1.0 would mean; and the Node versions this was tested against.
-- This changelog.
-
-### Added
-
 - **`diff`**, and a `compare_packages` MCP tool that names two packages in scope rather
   than taking paths. Compares environment, steps, console errors, network, form state, the
   marked element, counts and the file list field by field, and the rest of the console plus
@@ -62,6 +49,18 @@ single line of valid JSON from any client.
   deliberately different shapes of the same facts so neither witnesses the other. Stated in
   the README, in the module, and in the MCP tool description, which is the only
   documentation an agent ever reads.
+
+- `LICENSE` (Apache-2.0) and `NOTICE`, with ownership stated in `package.json`.
+- `CLA.md`, adapted from the Apache Software Foundation ICLA V2.2. Section 9 is additional
+  and grants the right to relicense contributions, including under terms that are not open
+  source. The differences from the ASF original are set out at the top of the document
+  rather than left for a reader to find by diffing.
+- `CONTRIBUTING.md`, including the constraints a change has to respect, and `SECURITY.md`.
+- README: registration snippets for Claude Code, Cursor, Codex and Windsurf, each carrying
+  the date that tool's own documentation was read; sections for the two new commands; what
+  1.0 would mean; "Not planned", for the things that will not grow; and the Node versions
+  this was tested against.
+- This changelog.
 
 ### Changed
 
