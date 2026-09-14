@@ -206,6 +206,31 @@ is the one thing here that is not catching up with a competitor.
   `report.json`. Ergonomics, not capability: everything they would narrow is already
   printable today.
 
+## Not planned
+
+Four things this will not grow. Each is a property somebody may be relying on rather than a
+preference, so they are written down here instead of waiting in an issue thread.
+
+- **No command that reads from an arbitrary filesystem path.** Scope is fixed by whoever
+  launches the tool: one package, or one directory of them. Commands address packages by
+  name inside that scope, and a name that tries to climb out of it fails rather than
+  escaping. This is what makes the MCP server safe to register once and leave registered.
+  `extract` is the one command that names a path, and it is a destination: it writes into
+  a directory you give it on that invocation, resolves every entry against that directory
+  and refuses anything that would land outside.
+- **No second renderer for `console`, `network` or `har`.** The reasoning is in
+  [Why some commands just print](#why-some-commands-just-print) and it has not changed.
+  Filters over what those commands already print are a different question, and are listed
+  above as something that could still happen.
+- **No network access, of any kind.** No update check, no telemetry, no fetching a schema
+  over HTTP. The schema travels inside the package precisely so none of that is needed.
+  Treat this as a commitment rather than a description of the current build: a change that
+  introduced a request would change what this tool is, and `SECURITY.md` asks you to report
+  one as a vulnerability.
+- **No writing into a package, and no modifying one.** This reads. Nothing here edits a
+  package, re-redacts it, repairs it or writes a file back into it. A package is evidence
+  somebody sent you, and a reader that can alter it stops being a reader.
+
 ## The format
 
 Every package contains `report.json`, the machine-readable source of record, alongside
