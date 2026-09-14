@@ -208,11 +208,24 @@ test('captures of different hosts are compared, with the mismatch said out loud'
   assert.match(text, /captures of different hosts, staging\.example\.test and www\.example\.test/)
 })
 
-test('a long value is truncated with its full length, not silently cut', () => {
+test('truncation reports the real length of what was cut, not the length it printed', () => {
+  // 400 x's render as 402 characters of JSON once quoted. The marker must say 402, never
+  // 96, and it must count the same thing it truncated. A number describing the display
+  // while reading as a measurement of the value is the failure being guarded here.
   const long = 'x'.repeat(400)
   const a = build({ environment: { note: long } })
   const b = build({ environment: { note: 'short' } })
-  assert.match(section(diff(a, b), 'Environment').lines[0], /\.\.\. \(\d{3} chars\)/)
+  const line = section(diff(a, b), 'Environment').lines[0]
+  assert.match(line, /\(96 of 402 shown\)/)
+  assert.doesNotMatch(line, /\(96 of 96 shown\)/)
+})
+
+test('a value that fits is printed whole, with no marker', () => {
+  const a = build({ environment: { note: 'short' } })
+  const b = build({ environment: { note: 'also short' } })
+  const line = section(diff(a, b), 'Environment').lines[0]
+  assert.equal(line, 'note: "short"  ->  "also short"')
+  assert.doesNotMatch(line, /shown\)/)
 })
 
 test('every section declares a kind and a source', () => {

@@ -45,9 +45,15 @@ const REDACTED_QUERY = /\?…\s*\((\d+)\s+parameters?\s+removed\)/
 
 /**
  * Long enough for a selector, a URL or a box, short enough that a computed style or a
- * snippet of outerHTML does not take the line off the screen. Truncation is marked with
- * the full length, because a difference you cannot see the whole of is still a
- * difference and the reader should know how much is missing.
+ * snippet of outerHTML does not take the line off the screen. Truncation is marked,
+ * because a difference you cannot see the whole of is still a difference and the reader
+ * should know how much is missing.
+ *
+ * Both numbers in the marker count the rendered JSON, which is the thing being cut, and
+ * the wording says "shown" so they cannot be read as a measurement of the value. They are
+ * not the same number: an outerHTML of 485 characters renders as 524 once quoted and
+ * escaped. Reporting the larger one as the length of the value would be a derived claim
+ * that is wrong in the direction that looks right.
  */
 const VALUE_WIDTH = 96
 
@@ -56,7 +62,7 @@ function json(value: unknown): string {
   const text = JSON.stringify(value) ?? String(value)
   return text.length <= VALUE_WIDTH
     ? text
-    : `${text.slice(0, VALUE_WIDTH)}... (${text.length} chars)`
+    : `${text.slice(0, VALUE_WIDTH)}... (${VALUE_WIDTH} of ${text.length} shown)`
 }
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
