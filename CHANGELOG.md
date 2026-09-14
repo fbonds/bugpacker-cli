@@ -5,8 +5,9 @@ is a separate product and is not covered here.
 
 ## 0.1.1 (unreleased)
 
-Documentation, licensing and metadata. **No change to shipped code.** Nothing under `src/`
-has changed since 0.1.0 was published on 2026-09-09, so the compiled output is the same.
+Documentation, licensing and metadata, plus one fix to what the build emits. **The compiled
+JavaScript is unchanged** and the source maps now carry their sources. Nothing under `src/`
+has changed since 0.1.0 was published on 2026-09-09.
 
 ### Added
 
@@ -39,6 +40,15 @@ has changed since 0.1.0 was published on 2026-09-09, so the compiled output is t
   for script, img and link, which never enter the HAR. The section now says which parts of
   its own promise work today.
 - The README described what an agent does with the output as though this tool did it.
+- Every shipped source map resolved to nothing. All seven carried `sources:
+  ["../src/*.ts"]` with `sourcesContent` absent, while the `files` allowlist excludes `src/`,
+  so a third of each install pointed at files that were not in it. `inlineSources` is on now,
+  so the maps carry the TypeScript they map to. Verified by installing the tarball into a
+  scratch project and triggering a real error: the trace resolves to `src/mcp.ts:257` and
+  prints the source line with a caret, where before it could reach no further than
+  `dist/mcp.js`. Node applies maps only under `--enable-source-maps`; without it you still
+  get the `dist/` frame. `declarationMap` is off, so no `.d.ts.map` is emitted and the `.d.ts`
+  files carry no dangling reference. Checked rather than assumed.
 - `npm test` only worked on Node 22. The glob was quoted, and `node --test` did not expand a
   quoted glob itself until then, so on Node 16, 18 and 20 it exited 1 with `Could not find
   '<repo>/test/*.test.js'`. Unquoted now, so the shell expands it, and the suite runs on 18,
