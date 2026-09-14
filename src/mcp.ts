@@ -24,6 +24,7 @@ import type { BugPackage } from './package.js'
 import { show } from './commands/show.js'
 import { steps, files } from './commands/artifacts.js'
 import { validate as validateChecks, renderChecks } from './commands/validate.js'
+import { diff as diffSections, renderDiff } from './commands/diff.js'
 
 /**
  * Echoed back to the client rather than asserted.
@@ -212,6 +213,22 @@ function tools(scope: Scope): Tool[] {
     },
   ]
   if (scope.dir) {
+    list.push({
+      name: 'compare_packages',
+      description:
+        'What changed between two captures of the same thing. Names two packages in the ' +
+        'scope this server was given; it takes no filesystem path. Some sections compare ' +
+        'fields and some can only compare lines of rendered text, and each says which it ' +
+        'did. Do not report a text section as though it identified a new warning.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          before: { type: 'string', description: 'The earlier package, by name.' },
+          after: { type: 'string', description: 'The later package, by name.' },
+        },
+        required: ['before', 'after'],
+      },
+    })
     list.unshift({
       name: 'list_packages',
       description:
@@ -227,6 +244,15 @@ function callTool(scope: Scope, name: string, args: Record<string, unknown>): st
   const which = typeof args.package === 'string' ? args.package : undefined
 
   if (name === 'list_packages') return renderPackages(scope)
+
+  if (name === 'compare_packages') {
+    if (typeof args.before !== 'string' || typeof args.after !== 'string') {
+      throw new Error('compare_packages needs "before" and "after", each a package name.')
+    }
+    const before = openInScope(scope, args.before)
+    const after = openInScope(scope, args.after)
+    return renderDiff(before, after, diffSections(before, after))
+  }
 
   const pkg = openInScope(scope, which)
   switch (name) {

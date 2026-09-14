@@ -25,6 +25,22 @@ single line of valid JSON from any client.
 
 ### Added
 
+- **`diff`**, and a `compare_packages` MCP tool that names two packages in scope rather
+  than taking paths. Compares environment, steps, console errors, network, form state, the
+  marked element, counts and the file list field by field, and the rest of the console plus
+  the subresource failures as lines of text, under a separate heading that says so.
+
+  A section resolves what it can read from the package and reports the kind it found, so
+  nothing is written for a structured console that does not exist and nothing breaks if one
+  arrives. Proven rather than asserted: a synthetic package carrying a `console` array flips
+  the section to `structured`, and that test fails against a build where the resolver is
+  hardcoded.
+
+  Requests match on method, origin and path. The query is excluded because redaction
+  replaces a scrubbed one with a placeholder recording only how many parameters it removed,
+  which is a property of the format rather than a shortcut here. A change in that number is
+  reported, because the query changed even if what changed is not in the package.
+
 - **`validate`**, and a `validate` MCP tool. Recomputes the SHA-256 and byte length of
   every artifact against what `report.json` records, checks the inventory both ways, and
   checks the totals the report states about itself. Exit `0`, `1` for a failure, `2` when

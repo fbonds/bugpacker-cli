@@ -12,6 +12,7 @@ import { openPackage } from './package.js'
 import { show } from './commands/show.js'
 import { steps, artifact, files, extract } from './commands/artifacts.js'
 import { validate, passed, renderChecks, checksAsJson } from './commands/validate.js'
+import { diff, renderDiff } from './commands/diff.js'
 import { serve, resolveScope } from './mcp.js'
 import { parseArgs } from './args.js'
 
@@ -25,6 +26,7 @@ const USAGE = `bugpacker <command> <package.zip>
   files             what is in the package
   validate          check the package is what report.json describes
                       --json        machine-readable, for CI
+  diff <a> <b>      what changed between two captures
   json              report.json, for piping into something else
   extract [name]    write an artifact to disk, or all of them
                       --out <dir>   where to write, default the current directory
@@ -70,6 +72,21 @@ function main(argv: string[]): void {
   const { command, positional, flags, switches } = parsed
   const target = positional[0]
   if (!target) fail(`${command} needs a package.\n\n${USAGE}`)
+
+  // Two packages, so it cannot use the single-package path below. Both are named by
+  // whoever runs the command, which is the same act that fixes scope everywhere else.
+  if (command === 'diff') {
+    const second = positional[1]
+    if (!second) fail(`diff needs two packages.\n\n${USAGE}`)
+    try {
+      const before = openPackage(target)
+      const after = openPackage(second)
+      process.stdout.write(`${renderDiff(before, after, diff(before, after))}\n`)
+    } catch (error) {
+      fail((error as Error).message)
+    }
+    return
+  }
 
   if (command === 'mcp') {
     try {

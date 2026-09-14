@@ -233,7 +233,11 @@ test('the server survives a run of bad lines and still answers the next request'
   assert.equal(replies.length, 6)
   assert.equal(replies[4].error.code, -32700, 'unparseable input is still a parse error')
   assert.equal(replies[5].id, 9)
-  assert.equal(replies[5].result.tools.length, 8)
+  // Deliberately not a count. What this test protects is that the transport survived a
+  // run of junk, and a hardcoded number here has now broken twice for the unrelated
+  // reason that a tool was added. The tool list has its own test.
+  assert.ok(Array.isArray(replies[5].result.tools))
+  assert.ok(replies[5].result.tools.some((t) => t.name === 'describe_bug'))
 })
 
 // The -32603 branch in serve() has no reachable trigger to test against: every path
@@ -252,4 +256,49 @@ test('the validate tool tells an agent what a pass does not mean', () => {
   assert.ok(tool, 'validate is not in tools/list')
   assert.match(tool.description, /corruption rather than forgery/)
   assert.match(tool.description, /report\.json is unsigned/)
+})
+
+test('the served tool list is exactly what is documented', () => {
+  // The one place a tool appearing or disappearing is caught. Every other test asks about
+  // the tool it cares about, so that adding one does not fail six unrelated assertions.
+  const names = (scope) =>
+    handle(scope, { jsonrpc: '2.0', id: 1, method: 'tools/list' }, '0.1.0')
+      .result.tools.map((t) => t.name)
+  assert.deepEqual(names(fileScope), [
+    'describe_bug', 'get_steps', 'get_console', 'get_network', 'list_files', 'get_file',
+    'validate',
+  ])
+  assert.deepEqual(names(dirScope), [
+    'list_packages', 'describe_bug', 'get_steps', 'get_console', 'get_network',
+    'list_files', 'get_file', 'validate', 'compare_packages',
+  ])
+})
+
+test('compare_packages exists only when a directory is being served', () => {
+  // It names two packages. With one package in scope there is nothing to compare it to,
+  // and offering the tool would invite a call that can only fail.
+  const forFile = handle(fileScope, { jsonrpc: '2.0', id: 1, method: 'tools/list' }, '0.1.0')
+  assert.ok(!forFile.result.tools.some((t) => t.name === 'compare_packages'))
+})
+
+test('compare_packages takes names, never paths, and says what it compared', () => {
+  const res = handle(dirScope, {
+    jsonrpc: '2.0', id: 1, method: 'tools/call',
+    params: { name: 'compare_packages', arguments: { before: 'one.zip', after: 'two.zip' } },
+  }, '0.1.0')
+  assert.ok(!res.result.isError, res.result.content?.[0]?.text)
+  assert.match(res.result.content[0].text, /Compared field by field/)
+})
+
+test('compare_packages cannot escape the scope through either argument', () => {
+  for (const args of [
+    { before: '../../../etc/passwd', after: 'two.zip' },
+    { before: 'one.zip', after: '../../../etc/passwd' },
+  ]) {
+    const res = handle(dirScope, {
+      jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'compare_packages', arguments: args },
+    }, '0.1.0')
+    assert.equal(res.result.isError, true)
+    assert.match(res.result.content[0].text, /No package named "passwd"/)
+  }
 })

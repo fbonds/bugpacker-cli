@@ -68,6 +68,7 @@ bugpacker network <package.zip>    # failed requests, kept apart from ad-blocked
 bugpacker har <package.zip>        # the full session as HAR
 bugpacker files <package.zip>      # what is in the package
 bugpacker validate <package.zip>   # is this the file the extension wrote?
+bugpacker diff <a.zip> <b.zip>     # what changed between two captures
 bugpacker json <package.zip>       # report.json, for piping into something else
 ```
 
@@ -224,29 +225,37 @@ format does not carry.
 This is not JSON Schema validation. The schema does travel inside every package, but
 applying it literally needs a schema validator, and this tool has one runtime dependency.
 
+## Comparing two captures
+
+```sh
+bugpacker diff <before.zip> <after.zip>
+```
+
+"It worked last Tuesday." Attach Tuesday's package and today's and get the difference.
+
+**Some of a package is fields and some of it is text laid out for a person, and the output
+says which you got.** Environment, steps, console errors, network, form state, the marked
+element, the counts and the file list are compared field by field. The rest of the console
+and the subresource failures are compared as lines, under their own heading, because
+`report.json` records console errors and nothing else from the console, and script, img and
+link failures never enter the HAR. For those, a changed line is all that can be said. Whether
+a warning is new, or the same one reworded, is not in the package.
+
+Nothing here is built for a format that might change. A section asks the package what it
+carries and reports the kind it found, so if `report.json` ever records the console
+structurally, that section starts saying `structured` on its own.
+
+Three things worth knowing before reading the output. Every environment difference is listed,
+including browser version and window size, because which of them matters is a judgement about
+your bug that this cannot make. Requests are matched on method, origin and path with the
+query excluded, because redaction replaces a scrubbed query with a placeholder recording only
+how many parameters it removed, so the query is not a stable key and nothing here can make it
+one; a change in that number is still reported, since it means the query changed even though
+what changed is not in the package. And captures of different hosts are compared rather than
+refused, with the mismatch said out loud, because staging against production is a real thing
+to want.
+
 ## What this does not do yet
-
-### Compare two captures
-
-[bugpacker.com](https://bugpacker.com/roadmap) promises this under "Compare two captures",
-so it is a commitment rather than an idea: attach last Tuesday's package and today's and get
-the difference.
-
-What a package carries that a comparison can work from: the environment, the state of every
-form field, the marked element and the page around it, the findings, the drafted steps, and
-the counts of what was captured. Those are structured and versioned in `report.json`. The
-console output and the network session are files beside it rather than fields inside it, and
-how much of them a comparison can reach is the part worth being precise about.
-
-The console is the sharper half of that. A console error reaches `report.json` as a step
-and as a finding, so a comparison can read it. A warning, a log line or a CSP violation
-exists only in the rendered `console.log`, and a subresource load failure for a script, an
-img or a link exists only in `network-errors.log`, both of them text laid out for a person
-to read. Closing that means adding them to `report.json` rather than writing a smarter
-comparison here.
-
-It is still the one thing on this list that is not catching up with a competitor, because a
-package is a file with a published schema and a hosted video is not.
 
 ### Smaller things
 
