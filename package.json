@@ -1,6 +1,6 @@
 {
   "name": "bugpacker-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI and MCP server for Bugpacker bug packages. Give a coding agent the console, network and repro steps from a real bug, without any of it leaving your machine.",
   "type": "module",
   "license": "Apache-2.0",
@@ -15,8 +15,9 @@
   "files": ["dist", "NOTICE", "CHANGELOG.md"],
   "engines": { "node": ">=18" },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/make-bin-executable.mjs",
     "dev": "tsc --watch",
+    "prepack": "npm run build",
     "test": "npm run build && node --test test/*.test.js",
     "prepublishOnly": "npm test",
     "typecheck": "tsc --noEmit"

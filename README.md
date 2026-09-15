@@ -49,14 +49,22 @@ npm install -g bugpacker-cli
 once and it never touches the network again.
 
 **Node versions.** `engines` says `>=18`, which is a floor rather than a recommendation. What
-was actually tested, on 13 September 2026: every command (`show`, `steps`, `console`,
-`network`, `har`, `files`, `json`, `extract`, plus `--help` and `--version`) and a full MCP
-stdio handshake (`initialize`, `tools/list`, `list_packages`) against a real package, on Node
-**16.20.2, 18.20.8, 20.20.2 and 22.20.0**. All passed. Both harnesses were checked against a
-deliberate failure first, so the passes discriminate: the command runner was pointed at a
-package that does not exist, and the MCP driver at an entry file that does not exist. Nothing
-in the code uses a version-gated API; the imports are `node:fs`, `node:path` and
-`node:readline`.
+was actually tested, on 15 September 2026: the package installed from its own tarball into an
+empty project, then every command (`show`, `steps`, `console`, `network`, `network --failed`,
+`har`, `files`, `json`, `validate`, `diff`, `extract`, plus `--help` and `--version`) and a
+full MCP stdio handshake (`initialize`, `tools/list`, `list_packages`) run against real
+packages on Node **16.20.2, 18.20.8, 20.20.2 and 22.20.0**. All passed on all four.
+
+That is a test of what you install, not of what compiles here. The binary was invoked as
+`./node_modules/.bin/bugpacker`, by explicit relative path, with the resolved target confirmed
+to be inside the scratch project. The distinction matters: a bare command name or `npx` can
+resolve to a globally linked development copy instead, and an empty working directory does not
+prevent it.
+
+Both harnesses were checked against deliberate failures first, so the passes discriminate: the
+command runner was pointed at a package that does not exist, and the MCP driver at a missing
+binary and at one with its execute bit removed, reporting `ENOENT` and `EACCES`. Nothing in
+the code uses a version-gated API; the imports are `node:fs`, `node:path` and `node:readline`.
 
 ## Use it from a terminal
 

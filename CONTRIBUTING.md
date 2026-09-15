@@ -95,6 +95,39 @@ file need not reach the summary. A green run on Node 16 is not a passing suite. 
 itself does run correctly there, which is why `engines` is a floor and this is a note about
 the suite rather than about the tool.
 
+## Verifying a published version
+
+Two steps, and they answer different questions. Both are needed.
+
+**A. Read the artifact.** No install, no PATH, no execution.
+
+```sh
+cd "$(mktemp -d)"
+npm pack bugpacker-cli@<version>
+tar -xzf bugpacker-cli-<version>.tgz
+stat -f %Lp package/dist/index.js     # 755
+ls package                            # NOTICE and CHANGELOG.md are here
+```
+
+**B. Prove it runs**, from a scratch project, by explicit relative path.
+
+```sh
+mkdir p && cd p && npm init -y
+npm install bugpacker-cli@<version>
+node -e "const p=require('path'),f=require('fs');const r=f.realpathSync('node_modules/.bin/bugpacker');if(!r.startsWith(process.cwd()))throw new Error('resolves outside the project: '+r);console.log('resolves inside the project')"
+./node_modules/.bin/bugpacker --version
+```
+
+**Never verify with a bare command name or `npx`.** Both consult PATH and any install that
+satisfies the version spec, including a globally linked development copy. An empty working
+directory does not prevent this: it removes the local `node_modules` and leaves the global
+link, which is where `npm link` puts things. That is how 0.1.1 was checked four separate ways
+and shipped with a non-executable bin anyway; every check ran the linked working tree.
+
+A is the only step that can see a mode defect, because `npm install` on npm 11.19.0 chmods a
+non-executable bin to 0755 on the way in. B would pass against a broken tarball. A reads what
+shipped; B proves what runs.
+
 ## Things worth opening an issue about first
 
 A new dependency, a new command, a change to the package format this reads, or anything that

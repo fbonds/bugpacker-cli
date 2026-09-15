@@ -3,6 +3,36 @@
 Notable changes to `bugpacker-cli`. The Chrome extension that writes the packages this reads
 is a separate product and is not covered here.
 
+## 0.1.2 (unreleased)
+
+One defect, and the reason four separate checks missed it.
+
+### Fixed
+
+- **The `bin` shipped non-executable.** `dist/index.js` is mode 0644 in the 0.1.1 tarball
+  where 0.1.0 shipped 0755. `tsc` does not set the execute bit: it preserves the mode of a
+  file it overwrites and creates a new one at 0644, while `npm link` chmods its target. So an
+  incrementally built `dist/` carried the bit for a reason the repository had nothing to do
+  with, and the first release packed after a clean `rm -rf dist` lost it. The build sets it
+  now, from the `bin` field rather than a hardcoded path, and `prepack` builds so a pack
+  cannot ship a `dist` the build did not just produce.
+
+  What a 0644 bin costs depends on the npm running it. npm 11.19.0 chmods it to 0755 on
+  install, so this may never have reached a user of that npm. The mode was wrong regardless,
+  and that is the whole of the claim.
+
+### Changed
+
+- **The Node version test now runs against an installed package.** It previously ran
+  `dist/` in the working tree, which is a claim about what compiles here rather than about
+  what a user gets. Every command and a full MCP handshake now run from a scratch install by
+  explicit relative path, on Node 16.20.2, 18.20.8, 20.20.2 and 22.20.0.
+
+- `CONTRIBUTING.md` records how to verify a published version, because the way it was done
+  before was wrong in a way that is easy to repeat. A bare command name or `npx` resolves
+  through PATH to any install satisfying the spec, including a globally linked development
+  copy, and an empty working directory does not prevent it. Every 0.1.1 check ran the link.
+
 ## 0.1.1 (2026-09-14)
 
 Documentation, metadata, source maps that resolve, and one crash fix.
