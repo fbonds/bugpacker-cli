@@ -3,7 +3,7 @@
 Notable changes to `bugpacker-cli`. The Chrome extension that writes the packages this reads
 is a separate product and is not covered here.
 
-## 0.1.2 (unreleased)
+## 0.1.2 (2026-09-15)
 
 One defect, and the reason four separate checks missed it.
 
