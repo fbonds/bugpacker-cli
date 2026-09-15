@@ -3,7 +3,7 @@
 Notable changes to `bugpacker-cli`. The Chrome extension that writes the packages this reads
 is a separate product and is not covered here.
 
-## 0.1.1 (unreleased)
+## 0.1.1 (2026-09-14)
 
 Documentation, metadata, source maps that resolve, and one crash fix.
 
