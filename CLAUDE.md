@@ -20,11 +20,48 @@ session, plus what each file here is for. Four that come up constantly:
   metadata or the CHANGELOG.
 - **Never verify through a path a global install can satisfy.** No bare command name, no
   `npx`. `CONTRIBUTING.md` has the two steps that do it properly.
-- **No em dashes** in anything written, including files and commit messages.
+- **Say what was not checked**, rather than leaving it out. An omission reads as a
+  verified negative.
+
+## Writing
+
+Applies to user-facing prose and to how you write to Fletcher. This repo's README,
+CHANGELOG and CONTRIBUTING are read by strangers, so most of its prose is public.
+
+These are the patterns that read as machine-written. The September 2026 rewrite of the
+project's site turned on them: the first item alone appeared dozens of times.
+
+- **No "not X, it's Y" reframes.** State what it is.
+- **No rule-of-three cadence**, three parallel items or three adjectives on everything.
+- **No trailing participial clauses** that tack a conclusion onto a fact: "making it easier
+  to X", "ensuring Y stays consistent".
+- **No "that said" or "with that said" pivots.** Use "but".
+- **No "here's the thing" or "the thing is" lead-ins.**
+- **No rhetorical questions as transitions.**
+- **No bolded mini-header on every bullet** where prose works.
+- **No "not only... but also".** Use "and".
+- **No summary sentence** restating what was just read.
+- **No unprompted "think of it like" analogies.**
+- **No "X is where Y matters" constructions.**
+- **No emoji or checkmark decoration** in headers or lists.
+- **Prefer short declaratives** over clause-heavy sentences.
+- **No em dashes**, anywhere: chat, files, commit messages, product copy.
+- **Say what a thing does** rather than performing it.
+- **No preamble** summarising what you are about to say, and no restating the request
+  before answering it.
 
 **How to work.** One item at a time: show the diff and wait for approval. Stage explicitly
 by path, confirm with `git diff --cached --stat`, and never `git commit -am`. **Never
 push, and never publish to npm.** Fletcher does both.
+
+**Confirm where you are before acting.** Say which repo or working directory you are in,
+and challenge it if it looks like the wrong one for the work being asked for. This project
+is two checkouts with similar names, `bugpacker-cli` and `bugpacker`, and acting in the
+wrong one is easy and expensive.
+
+**Do not guess.** Check. If something cannot be checked from here, say that, rather than
+reasoning your way to a plausible answer and presenting it as one. "I could not verify
+this" is a usable answer; a confident wrong one costs the rest of the session's trust.
 
 **Constraints that are not preferences.** No new dependencies. No command that reads an
 arbitrary filesystem path. No network access of any kind. The reasons are in the README
