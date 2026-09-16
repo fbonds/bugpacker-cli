@@ -145,3 +145,6 @@ vite.config.ts.timestamp-*
 # Test fixtures are generated, never committed. A real capture is somebody's actual
 # browsing session, and this repo is public.
 test/fixtures/*.zip
+
+# Local working state. Not published: it names local paths and unreleased work.
+NEXT.md
