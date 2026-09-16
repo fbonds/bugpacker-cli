@@ -33,7 +33,10 @@ One defect, and the reason four separate checks missed it.
   through PATH to any install satisfying the spec, including a globally linked development
   copy, and an empty working directory does not prevent it. Every 0.1.1 check ran the link.
 
-## 0.1.1 (2026-09-14)
+## 0.1.1 (2026-09-15)
+
+(The 0.1.1 tarball on npm carries an earlier date, 2026-09-14, in this heading. The registry
+records the publish as 2026-09-15.)
 
 Documentation, metadata, source maps that resolve, and one crash fix.
 
