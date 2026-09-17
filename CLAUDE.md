@@ -50,6 +50,8 @@ project's site turned on them: the first item alone appeared dozens of times.
 - **No preamble** summarising what you are about to say, and no restating the request
   before answering it.
 
+## Working rules
+
 **How to work.** One item at a time: show the diff and wait for approval. Stage explicitly
 by path, confirm with `git diff --cached --stat`, and never `git commit -am`. **Never
 push, and never publish to npm.** Fletcher does both.
